@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "type": "module",
     "fs": "^0.0.1-security",
     "json": "^11.0.0",
     "openai": "^4.24.7",

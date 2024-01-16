@@ -1,6 +1,9 @@
 const OpenAI = require('openai');
-const openai = new OpenAI( {apiKey: "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"} );
 const fs = require('fs');
+const secrets = require('./secrets/openai.json');
+
+const apiKey = secrets.OPENAI_API_KEY;
+const openai = new OpenAI( {apiKey} );
 
 async function main() {
     const file = await openai.files.create({
@@ -19,7 +22,7 @@ async function main() {
 
     const thread = await openai.beta.threads.create();
 
-    const field_name = "yield" // Todo : do we think this is a nice, generalizable way of using the code? Input can then come in from Olli
+    const field_name = "variety" // Todo : do we think this is a nice, generalizable way of using the code? Input can then come in from Olli
 
     const message = await openai.beta.threads.messages.create(
         thread.id,
