@@ -1,77 +1,114 @@
-const OpenAI = require('openai');
-const fs = require('fs');
-const secrets = require('./secrets/openai.json');
+// const OpenAI = require('openai');
+// const fs = require('fs');
+// const secrets = require('./secrets/openai.json');
 
-const apiKey = secrets.OPENAI_API_KEY;
-const openai = new OpenAI( {apiKey} );
+// const apiKey = secrets.OPENAI_API_KEY;
+// const openai = new OpenAI( {apiKey} );
 
-async function main() {
-    const file = await openai.files.create({
-        file: fs.createReadStream("datasets/barley.json"),
-        purpose: "assistants",
-    });
+// async function fetchGPTResponse() {
+//     const file = await openai.files.create({
+//         file: fs.createReadStream("datasets/barley.json"),
+//         purpose: "assistants",
+//     });
 
-    const file_name = "barley"; // Perhaps nice way to include semantic meaning?
+//     const file_name = "barley.json"; // Perhaps nice way to include semantic meaning?
 
-    const assistant = await openai.beta.assistants.create({
-        instructions: `You are an expert data analyst who is knowledgeable about about ${file_name} and the Vega-Lite predicate format. Your goal is to use your semantic understanding of data to create interesting and non-obvious binnings.`,
-        model: "gpt-4-1106-preview",
-        tools: [{"type": "retrieval"}],
-        file_ids: [file.id]
-    });
+//     const assistant = await openai.beta.assistants.create({
+//         instructions: 
 
-    const thread = await openai.beta.threads.create();
+//         `You will format all your answers using the Vega-Lite predicate formatting. For a field predicate, 
+//         a field must be provided along with one of the predicate properties: equal, lt (less than), 
+//         lte (less than or equal), gt (greater than), gte(greater than or equal), or range. 
 
-    const field_name = "variety" // Todo : do we think this is a nice, generalizable way of using the code? Input can then come in from Olli
+//         Some examples are the following:
 
-    const message = await openai.beta.threads.messages.create(
-        thread.id,
-        {
-          role: "user",
-          content: `Create binnings for the field ${field_name} from the file.`,
-        }
-    );
+//         A {"field": "car_color", "equal": "red"} means the car_color field's value is equal to "red".
+//         A {"field": "x", "range": [0, 5]}} means the x field's value is in range [0,5] (0 ≤ x ≤ 5).
+//         A {"field": "state", "gt": "Arizona"} means the state field's value is greater than "Arizona" by string comparison.
+//         A {"field": "height", "lt": 180} means the height field's value is less than 180.
+//         `,
+//         model: "gpt-4-1106-preview",
+//         tools: [{"type": "retrieval"}],
+//         file_ids: [file.id]
+//     });
 
-    const message2 = await openai.beta.threads.messages.create(
-        thread.id,
-        {
-          role: "user",
-          content: `Please format the binnings in the following way: {name: [insert name], pred: {field: ${field_name}, gt/gte/lt/lte/range/equal}} `,
-        }
-    );
+//     const thread = await openai.beta.threads.create();
 
-    const run = await openai.beta.threads.runs.create(
-        thread.id,
-        {
-          assistant_id: assistant.id
-        }
-    );
+//     const field_name = "variety"
+
+//     const message = await openai.beta.threads.messages.create(
+//         thread.id,
+//         {
+//           role: "user",
+//           content: 
+          
+//           `###Instruction### Your task is to create meaningful binnings that capture the semantic 
+//           meaning of the ${field_name} field in the file ${file_name}. Avoid conventional or straightforward binnings. 
+//           You will be penalized for proposing non-useful binning strategies.`,
+//         }
+//     );
+
+//     const message2 = await openai.beta.threads.messages.create(
+//         thread.id,
+//         {
+//           role: "user",
+//           content: 
+
+//           `Please format the binnings in the following JSON format: {binnings: [{bin_name: [insert name],
+//           pred: {field: ${field_name}, [insert predicate values]}]} `,
+//         }
+//     );
+
+//     const run = await openai.beta.threads.runs.create(
+//         thread.id,
+//         {
+//           assistant_id: assistant.id
+//         }
+//     );
     
-    let response = await openai.beta.threads.runs.retrieve(
-        thread.id,
-        run.id
-    );
+//     let response = await openai.beta.threads.runs.retrieve(
+//         thread.id,
+//         run.id
+//     );
     
-    while (response.status === "queued" || response.status === "in_progress") {
-        console.log(response.status);
-        // Wait for 5 seconds before checking the status again
-        await new Promise(resolve => setTimeout(resolve, 5000));
+//     while (response.status === "queued" || response.status === "in_progress") {
+//         console.log(response.status);
+//         // Wait for 5 seconds before checking the status again
+//         await new Promise(resolve => setTimeout(resolve, 5000));
         
-        response = await openai.beta.threads.runs.retrieve(
-            thread.id,
-            run.id
-        );
-    };
+//         response = await openai.beta.threads.runs.retrieve(
+//             thread.id,
+//             run.id
+//         );
+//     };
     
-    console.log(response.status);
+//     console.log(response.status);
 
-    const messages = await openai.beta.threads.messages.list(
-        thread.id
-    );
+//     const messages = await openai.beta.threads.messages.list(
+//         thread.id
+//     );
 
-    console.log(messages.data[0].content);
+//     console.log(messages.data[0].content);
+    
+//     return messages.data[0].content
 
-}
+// }
 
-main();
+// function updateHTMLContent(text) {
+//     const outputElement = document.getElementById('gpt-output');
+//     if (outputElement) {
+//       outputElement.textContent = text;
+//     }
+// }
+
+// // Main function to get GPT output and display it
+// async function displayGPTOutput() {
+//     const gptResponse = await fetchGPTResponse();
+//     updateHTMLContent(gptResponse);
+// }
+  
+// displayGPTOutput();
+
+
+
 
