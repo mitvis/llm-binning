@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.makeJSON = exports.fetchGPTResponse = void 0;
+exports.fetchGPTResponse = void 0;
 const fs_1 = __importDefault(require("fs"));
 const openai_1 = __importDefault(require("openai"));
 const secrets = require('../secrets/openai.json');
@@ -65,6 +65,41 @@ function fetchGPTResponse(dataset, field) {
                 }
             }
         ]
+
+        Another example, if we have:
+        {
+            "field": "car_origin",
+            "field_bins": ["Japan", "USA", "France"]
+        },
+        
+        You should output:
+        
+        [
+            {
+                "bin_name": "Japan",
+                "pred": {
+                  "field": "car_origin",
+                  "oneOf": ["nissan", "lexus"],
+                  "reasoning": [insert detailed reasoning for bin and its boundaries]
+                }
+            },
+            {
+                "bin_name": "USA",
+                "pred": {
+                  "field": "car_origin",
+                  "oneOf": ["ford", "ram"],
+                  "reasoning": [insert detailed reasoning for bin]
+                }
+            },
+            {
+                "bin_name": "France",
+                "pred": {
+                  "field": "car_origin",
+                  "oneOf": ["renault", "citroen"],
+                  "reasoning": [insert detailed reasoning for bin]
+                }
+            }
+        ]
         `,
             model: "gpt-4-1106-preview",
             tools: [{ "type": "retrieval" }],
@@ -110,28 +145,25 @@ function fetchGPTResponse(dataset, field) {
     });
 }
 exports.fetchGPTResponse = fetchGPTResponse;
-function makeJSON(output) {
-    return __awaiter(this, void 0, void 0, function* () {
-        // Setup the initial conversation context
-        let messages = [
-            {
-                role: "system",
-                content: "Please turn the json part of the following text into a JSON."
-            },
-            {
-                role: "user",
-                content: output,
-            },
-        ];
-        // Send messages to the OpenAI Chat API
-        const response = yield openai.chat.completions.create({
-            model: "gpt-4-1106-preview",
-            messages: messages,
-            response_format: { type: "json_object" },
-            seed: 1,
-        });
-        console.log(response.choices[0].message.content);
-        return response.choices[0].message.content;
-    });
-}
-exports.makeJSON = makeJSON;
+// export async function makeJSON(output: string): Promise<string | null>{
+//     // Setup the initial conversation context
+//     let messages: Array<any> = [
+//         {
+//           role: "system",
+//           content: "Please turn the json part of the following text into a JSON."
+//         },
+//         {
+//           role: "user",
+//           content: output,
+//         },
+//       ];
+//     // Send messages to the OpenAI Chat API
+//     const response = await openai.chat.completions.create({
+//         model: "gpt-4-1106-preview",
+//         messages: messages,
+//         response_format: { type: "json_object" },
+//         seed: 1,
+//     });
+//     console.log(response.choices[0].message.content);
+//     return response.choices[0].message.content
+// }

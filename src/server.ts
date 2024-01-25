@@ -2,9 +2,10 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import cors from 'cors';
-import {parse} from 'csv-parse/sync';
+import { parse } from 'csv-parse/sync';
 import axios from 'axios';
-import { makeJSON, fetchGPTResponse } from './llm';
+import { fetchGPTResponse } from './llm';
+import { extractAndParseJSON } from './utils/parse_json'
 
 const app = express();
 app.use(cors()); // Enable CORS for all routes
@@ -34,8 +35,8 @@ app.get('/datasets/:datasetName/fields', (req, res) => {
             } else if (datasetPath.endsWith('.csv')) {
                 const records = parse(data, { to_line: 1 });
                 fields = records[0];
+                console.log(records[0])
             }
-
             res.json(fields); // Send the field names
         } catch (parseError) {
             res.status(500).send('Error parsing data');
@@ -58,7 +59,7 @@ app.post('/bin', express.json(), async (req, res) => {
 
     try {
         const field_bins = await fetchGPTResponse(dataset, field);
-        const response = await makeJSON(field_bins);
+        const response = extractAndParseJSON(field_bins)
         res.json({ response });
     } catch (error) {
         console.error(error);

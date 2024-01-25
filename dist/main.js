@@ -32,10 +32,19 @@ dropdown.addEventListener('change', (event) => {
                 fields.forEach((field) => {
                     const label = document.createElement('label');
                     const checkbox = document.createElement('input');
+                    // const fieldDiv = document.createElement('div');
+                    const responseDisplay = document.createElement('span'); // Element to display GPT response
                     checkbox.type = 'checkbox';
                     checkbox.value = field;
+                    // label.appendChild()
+                    // fieldsContainer.appendChild(fieldDiv);
+                    // fieldDiv.appendChild(label);
+                    // fieldDiv.appendChild(responseDisplay); // Append responseDisplay next to the checkbox
+                    // fieldsContainer.appendChild(document.createElement('br'));
                     label.appendChild(checkbox);
                     label.appendChild(document.createTextNode(field));
+                    // fieldDiv.appendChild(label);
+                    label.appendChild(responseDisplay);
                     fieldsContainer.appendChild(label);
                     fieldsContainer.appendChild(document.createElement('br'));
                     checkbox.addEventListener('change', () => {
@@ -53,10 +62,11 @@ dropdown.addEventListener('change', (event) => {
                                 .then(response => response.json())
                                 .then(data => {
                                 console.log('GPT Response:', data.response);
-                                // Process and display the GPT response
+                                responseDisplay.textContent = ` GPT Response: ${JSON.stringify(data.response)}`; // Display GPT response
                             })
                                 .catch(error => {
                                 console.error('Error:', error);
+                                responseDisplay.textContent = ` Error: ${error}`; // Display error if any
                             });
                         }
                     });

@@ -18,6 +18,7 @@ const path_1 = __importDefault(require("path"));
 const cors_1 = __importDefault(require("cors"));
 const sync_1 = require("csv-parse/sync");
 const llm_1 = require("./llm");
+const parse_json_1 = require("./utils/parse_json");
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)()); // Enable CORS for all routes
 const PORT = 3000;
@@ -42,6 +43,7 @@ app.get('/datasets/:datasetName/fields', (req, res) => {
             else if (datasetPath.endsWith('.csv')) {
                 const records = (0, sync_1.parse)(data, { to_line: 1 });
                 fields = records[0];
+                console.log(records[0]);
             }
             res.json(fields); // Send the field names
         }
@@ -63,7 +65,7 @@ app.post('/bin', express_1.default.json(), (req, res) => __awaiter(void 0, void 
     const { dataset, field } = req.body;
     try {
         const field_bins = yield (0, llm_1.fetchGPTResponse)(dataset, field);
-        const response = yield (0, llm_1.makeJSON)(field_bins);
+        const response = (0, parse_json_1.extractAndParseJSON)(field_bins);
         res.json({ response });
     }
     catch (error) {

@@ -55,6 +55,41 @@ export async function fetchGPTResponse(dataset: string, field: string): Promise<
                 }
             }
         ]
+
+        Another example, if we have:
+        {
+            "field": "car_origin",
+            "field_bins": ["Japan", "USA", "France"]
+        },
+        
+        You should output:
+        
+        [
+            {
+                "bin_name": "Japan",
+                "pred": {
+                  "field": "car_origin",
+                  "oneOf": ["nissan", "lexus"],
+                  "reasoning": [insert detailed reasoning for bin and its boundaries]
+                }
+            },
+            {
+                "bin_name": "USA",
+                "pred": {
+                  "field": "car_origin",
+                  "oneOf": ["ford", "ram"],
+                  "reasoning": [insert detailed reasoning for bin]
+                }
+            },
+            {
+                "bin_name": "France",
+                "pred": {
+                  "field": "car_origin",
+                  "oneOf": ["renault", "citroen"],
+                  "reasoning": [insert detailed reasoning for bin]
+                }
+            }
+        ]
         `,
         model: "gpt-4-1106-preview",
         tools: [{"type": "retrieval"}],
@@ -125,28 +160,28 @@ export async function fetchGPTResponse(dataset: string, field: string): Promise<
 
 }
 
-export async function makeJSON(output: string): Promise<string | null>{
-    // Setup the initial conversation context
-    let messages: Array<any> = [
-        {
-          role: "system",
-          content: "Please turn the json part of the following text into a JSON."
-        },
-        {
-          role: "user",
-          content: output,
-        },
-      ];
+// export async function makeJSON(output: string): Promise<string | null>{
+//     // Setup the initial conversation context
+//     let messages: Array<any> = [
+//         {
+//           role: "system",
+//           content: "Please turn the json part of the following text into a JSON."
+//         },
+//         {
+//           role: "user",
+//           content: output,
+//         },
+//       ];
   
-    // Send messages to the OpenAI Chat API
-    const response = await openai.chat.completions.create({
-        model: "gpt-4-1106-preview",
-        messages: messages,
-        response_format: { type: "json_object" },
-        seed: 1,
-    });
+//     // Send messages to the OpenAI Chat API
+//     const response = await openai.chat.completions.create({
+//         model: "gpt-4-1106-preview",
+//         messages: messages,
+//         response_format: { type: "json_object" },
+//         seed: 1,
+//     });
   
-    console.log(response.choices[0].message.content);
+//     console.log(response.choices[0].message.content);
     
-    return response.choices[0].message.content
-}
+//     return response.choices[0].message.content
+// }
