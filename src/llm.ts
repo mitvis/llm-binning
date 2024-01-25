@@ -104,9 +104,8 @@ export async function fetchGPTResponse(dataset: string, field: string): Promise<
           role: "user",
           content: 
           
-          `For the ${field} in the data, please create non-obvious binnings that include the semantic 
-          meaning of the data with the following JSON format. Please make sure each bin can be mapped 
-          to the original data.
+          `For the ${field} in the data, please create a way of breaking down this data in a non-obvious way that includes the semantic 
+          meaning of the data with the following JSON format.
 
            {
             [

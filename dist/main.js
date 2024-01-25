@@ -62,7 +62,7 @@ dropdown.addEventListener('change', (event) => {
                                 .then(response => response.json())
                                 .then(data => {
                                 console.log('GPT Response:', data.response);
-                                responseDisplay.textContent = ` GPT Response: ${JSON.stringify(data.response)}`; // Display GPT response
+                                responseDisplay.textContent = ` GPT Response: ${data.response.stringify}`; // Display GPT response
                             })
                                 .catch(error => {
                                 console.error('Error:', error);

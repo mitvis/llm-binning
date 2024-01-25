@@ -108,9 +108,8 @@ function fetchGPTResponse(dataset, field) {
         const thread = yield openai.beta.threads.create();
         const message = yield openai.beta.threads.messages.create(thread.id, {
             role: "user",
-            content: `For the ${field} in the data, please create non-obvious binnings that include the semantic 
-          meaning of the data with the following JSON format. Please make sure each bin can be mapped 
-          to the original data.
+            content: `For the ${field} in the data, please create a way of breaking down this data in a non-obvious way that includes the semantic 
+          meaning of the data with the following JSON format.
 
            {
             [
