@@ -4,8 +4,8 @@ import path from 'path';
 import cors from 'cors';
 import { parse } from 'csv-parse/sync';
 import axios from 'axios';
-import { fetchGPTResponse } from './llm';
-import { extractAndParseJSON } from './utils/parse_json'
+import { fetchGPTResponse } from './src/llm';
+import { extractAndParseJSON } from './src/utils/parse_json'
 
 const app = express();
 app.use(cors()); // Enable CORS for all routes

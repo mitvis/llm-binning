@@ -1,14 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.extractAndParseJSON = void 0;
-function extractAndParseJSON(text) {
-    const jsonPattern = /```json([\s\S]*?)```/; // Regular expression to match JSON block
-    const match = jsonPattern.exec(text);
+export function extractAndParseJSON(text) {
+    var jsonPattern = /```json([\s\S]*?)```/; // Regular expression to match JSON block
+    var match = jsonPattern.exec(text);
     if (match && match[1]) {
         try {
-            const jsonString = match[1].trim();
-            // const jsonData = JSON.parse(jsonString);
-            return jsonString;
+            var jsonString = match[1].trim();
+            var jsonData = JSON.parse(jsonString);
+            return jsonData;
         }
         catch (error) {
             console.error('Error parsing JSON:', error);
@@ -20,4 +17,3 @@ function extractAndParseJSON(text) {
         return null;
     }
 }
-exports.extractAndParseJSON = extractAndParseJSON;

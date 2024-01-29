@@ -6,19 +6,16 @@
     <title>LLM Semantic Binning</title>
 </head>
 <body>
-    <h1>Select a Dataset</h1>
-    <select id="datasetDropdown">
-        <option value="">Select a dataset</option>
-        <!-- Options will be added here dynamically -->
-    </select>
 
-    <!-- Container for checkboxes -->
+    <h1>Upload a Dataset</h1>
+
+    <input type="file" id="fileInput" accept=".json">
+    <button id="uploadButton">Upload Dataset</button>
     <div id="fieldsContainer"></div>
 
     <!-- Link to the compiled TypeScript file (as JavaScript) -->
     <script src="./dist/main.js"></script>
 </body>
 </html>
-
 
 
