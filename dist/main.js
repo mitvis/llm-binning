@@ -36,21 +36,27 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 document.addEventListener('DOMContentLoaded', function () { return __awaiter(_this, void 0, void 0, function () {
-    var fileInput, uploadButton, fieldsContainer;
+    var fileInput, uploadButton, fieldsContainer, apiKeyInput;
     var _this = this;
     return __generator(this, function (_a) {
         fileInput = document.getElementById('fileInput');
         uploadButton = document.getElementById('uploadButton');
         fieldsContainer = document.getElementById('fieldsContainer');
+        apiKeyInput = document.getElementById('apiKeyInput');
         uploadButton.addEventListener('click', function () { return __awaiter(_this, void 0, void 0, function () {
-            var file, fileId_1, reader;
+            var apiKey, file, fileId_1, reader;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        apiKey = apiKeyInput.value;
+                        if (!apiKey) {
+                            alert("Please enter the API key.");
+                            return [2 /*return*/];
+                        }
                         if (!(fileInput.files && fileInput.files.length > 0)) return [3 /*break*/, 2];
                         file = fileInput.files[0];
-                        return [4 /*yield*/, uploadFileGPT(file)];
+                        return [4 /*yield*/, uploadFileGPT(apiKey, file)];
                     case 1:
                         fileId_1 = _a.sent();
                         console.log(fileId_1);
@@ -86,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                                             _a.label = 1;
                                                         case 1:
                                                             _a.trys.push([1, 3, , 4]);
-                                                            return [4 /*yield*/, fetchOpenAI(fileId_1, field)];
+                                                            return [4 /*yield*/, fetchOpenAI(apiKey, fileId_1, field)];
                                                         case 2:
                                                             response = _a.sent();
                                                             responseDisplay.textContent = extractAndParseJSON(response);
@@ -118,13 +124,12 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
         return [2 /*return*/];
     });
 }); });
-function uploadFileGPT(file) {
+function uploadFileGPT(apiKey, file) {
     return __awaiter(this, void 0, void 0, function () {
-        var apiKey, formData, uploadDataset, responseData, fileId;
+        var formData, uploadDataset, responseData, fileId;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    apiKey = "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";
                     formData = new FormData();
                     formData.append('purpose', 'assistants');
                     formData.append('file', file); // Assuming 'file' is a File object
@@ -149,27 +154,25 @@ function uploadFileGPT(file) {
         });
     });
 }
-function fetchOpenAI(fileId, field) {
+function fetchOpenAI(apiKey, fileId, field) {
     return __awaiter(this, void 0, void 0, function () {
-        var apiKey, createAssistant, responseData, assistantId, sendMessage, runData, runId, threadId, checkRunStatus, getMessages, messages;
+        var createAssistant, responseData, assistantId, sendMessage, runData, runId, threadId, checkRunStatus, getMessages, messages;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    apiKey = "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";
-                    return [4 /*yield*/, fetch('https://api.openai.com/v1/assistants', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': "Bearer ".concat(apiKey),
-                                'OpenAI-Beta': 'assistants=v1'
-                            },
-                            body: JSON.stringify({
-                                instructions: "Please analyze the uploaded dataset. For a field in the dataset, you will format all of it's binnings \n                using the Vega-Lite predicate formatting. For a bin, a field must be provided along with one of \n                the predicate properties: equal, lt (less than), lte (less than or equal), gt (greater than), \n                gte (greater than or equal), range, or oneOf.\n                \n                For example, if we have:\n\n                {\n                    \"field\": \"Displacement\",\n                    \"field_bins\": [\"Compact\", \"Mid-Size\", \"Full-Size\"]\n                },\n                \n                You should output:\n                \n                [\n                    {\n                        \"bin_name\": \"Compact\",\n                        \"pred\": {\n                        \"field\": \"Displacement\",\n                        \"lte\": 100,\n                        \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"Mid-Size\",\n                        \"pred\": {\n                        \"field\": \"Displacement\",\n                        \"range\": [101, 150],\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"Full-Size\",\n                        \"pred\": {\n                        \"field\": \"Displacement\",\n                        \"gt\": 150,\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    }\n                ]\n\n                Another example, if we have:\n\n                {\n                    \"field\": \"car_origin\",\n                    \"field_bins\": [\"Japan\", \"USA\", \"France\"]\n                },\n                \n                You should output:\n                \n                [\n                    {\n                        \"bin_name\": \"Japan\",\n                        \"pred\": {\n                        \"field\": \"car_origin\",\n                        \"oneOf\": [\"nissan\", \"lexus\"],\n                        \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"USA\",\n                        \"pred\": {\n                        \"field\": \"car_origin\",\n                        \"oneOf\": [\"ford\", \"ram\"],\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"France\",\n                        \"pred\": {\n                        \"field\": \"car_origin\",\n                        \"oneOf\": [\"renault\", \"citroen\"],\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    }\n                ]",
-                                model: "gpt-4-1106-preview",
-                                tools: [{ "type": "retrieval" }],
-                                file_ids: [fileId]
-                            })
-                        })];
+                case 0: return [4 /*yield*/, fetch('https://api.openai.com/v1/assistants', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': "Bearer ".concat(apiKey),
+                            'OpenAI-Beta': 'assistants=v1'
+                        },
+                        body: JSON.stringify({
+                            instructions: "Please analyze the uploaded dataset. For a field in the dataset, you will format all of it's binnings \n                using the Vega-Lite predicate formatting. For a bin, a field must be provided along with one of \n                the predicate properties: equal, lt (less than), lte (less than or equal), gt (greater than), \n                gte (greater than or equal), range, or oneOf.\n                \n                For example, if we have:\n\n                {\n                    \"field\": \"Displacement\",\n                    \"field_bins\": [\"Compact\", \"Mid-Size\", \"Full-Size\"]\n                },\n                \n                You should output:\n                \n                [\n                    {\n                        \"bin_name\": \"Compact\",\n                        \"pred\": {\n                        \"field\": \"Displacement\",\n                        \"lte\": 100,\n                        \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"Mid-Size\",\n                        \"pred\": {\n                        \"field\": \"Displacement\",\n                        \"range\": [101, 150],\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"Full-Size\",\n                        \"pred\": {\n                        \"field\": \"Displacement\",\n                        \"gt\": 150,\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    }\n                ]\n\n                Another example, if we have:\n\n                {\n                    \"field\": \"car_origin\",\n                    \"field_bins\": [\"Japan\", \"USA\", \"France\"]\n                },\n                \n                You should output:\n                \n                [\n                    {\n                        \"bin_name\": \"Japan\",\n                        \"pred\": {\n                        \"field\": \"car_origin\",\n                        \"oneOf\": [\"nissan\", \"lexus\"],\n                        \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"USA\",\n                        \"pred\": {\n                        \"field\": \"car_origin\",\n                        \"oneOf\": [\"ford\", \"ram\"],\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"France\",\n                        \"pred\": {\n                        \"field\": \"car_origin\",\n                        \"oneOf\": [\"renault\", \"citroen\"],\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    }\n                ]",
+                            model: "gpt-4-1106-preview",
+                            tools: [{ "type": "retrieval" }],
+                            file_ids: [fileId]
+                        })
+                    })];
                 case 1:
                     createAssistant = _a.sent();
                     if (!createAssistant.ok) {

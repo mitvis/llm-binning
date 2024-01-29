@@ -2,13 +2,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const fileInput = document.getElementById('fileInput') as HTMLInputElement; // Correct type assertion
     const uploadButton = document.getElementById('uploadButton') as HTMLButtonElement;
     const fieldsContainer = document.getElementById('fieldsContainer') as HTMLDivElement;
+    const apiKeyInput = document.getElementById('apiKeyInput') as HTMLInputElement; // API Key Input
 
     uploadButton.addEventListener('click', async () => {
+
+        const apiKey = apiKeyInput.value; // Use API Key from input
+        
+        if (!apiKey) {
+            alert("Please enter the API key.");
+            return;
+        }
+
         if (fileInput.files && fileInput.files.length > 0) {
             const file = fileInput.files[0];
 
             // Upload the new file to GPT 
-            const fileId = await uploadFileGPT(file);
+            const fileId = await uploadFileGPT(apiKey, file);
             console.log(fileId);
 
             const reader = new FileReader();
@@ -39,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             checkbox.addEventListener('change', async () => {
                                 if (checkbox.checked) {
                                     try {
-                                        const response = await fetchOpenAI(fileId, field);
+                                        const response = await fetchOpenAI(apiKey, fileId, field);
                                         responseDisplay.textContent = extractAndParseJSON(response);
                                     } catch (error) {
                                         console.error('Error:', error);
@@ -59,8 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-async function uploadFileGPT(file) {
-    const apiKey = "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";
+async function uploadFileGPT(apiKey, file) {
 
     const formData = new FormData();
     formData.append('purpose', 'assistants');
@@ -87,8 +95,7 @@ async function uploadFileGPT(file) {
 }
 
 
-async function fetchOpenAI(fileId, field) {
-    const apiKey = "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"; // Extremely risky to expose API key here
+async function fetchOpenAI(apiKey, fileId, field) {
 
     const createAssistant = await fetch('https://api.openai.com/v1/assistants', {
         method: 'POST',
