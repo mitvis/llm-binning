@@ -4,15 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLM Semantic Binning</title>
+    <style>
+        /* Existing CSS */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #000000;
+            line-height: 1.6;
+        }
+
+        h1 {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        label, input, button {
+            display: block;
+            width: 30%;
+            padding: 10px;
+            margin: auto; /* Center align form elements */
+        }
+
+        input, button {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #9c9b9b;
+            color: #fff;
+            border: 0;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4a4747;
+        }
+
+        /* Additional CSS for Tree View */
+        .tree-item {
+            cursor: pointer;
+            padding: 5px;
+            border: 1px solid #ccc;
+            margin: 5px;
+        }
+
+        .tree-item > ul {
+            padding-left: 20px;
+        }
+
+        .selected {
+            background-color: #e0e0e0;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
+    <h1>Semantic Binning Prototype</h1>
+
+    <label for="apiKeyInput">Please input an OpenAI API Key below</label>
     <input type="text" id="apiKeyInput" placeholder="Enter API Key" />
 
-    <h1>Upload a Dataset</h1>
-
+    <label for="fileInput">Please upload a dataset JSON file</label>
     <input type="file" id="fileInput" accept=".json">
-    <button id="uploadButton">Upload Dataset</button>
+
+    <button id="uploadButton">Get Dataset Binnings</button>
+
     <div id="fieldsContainer"></div>
 
     <!-- Link to the compiled TypeScript file (as JavaScript) -->

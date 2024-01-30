@@ -36,13 +36,15 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 var _this = this;
 document.addEventListener('DOMContentLoaded', function () { return __awaiter(_this, void 0, void 0, function () {
-    var fileInput, uploadButton, fieldsContainer, apiKeyInput;
+    var fileInput, uploadButton, fieldsContainer, apiKeyInput, currentSelectedIndex, data;
     var _this = this;
     return __generator(this, function (_a) {
         fileInput = document.getElementById('fileInput');
         uploadButton = document.getElementById('uploadButton');
         fieldsContainer = document.getElementById('fieldsContainer');
         apiKeyInput = document.getElementById('apiKeyInput');
+        currentSelectedIndex = 0;
+        data = [];
         uploadButton.addEventListener('click', function () { return __awaiter(_this, void 0, void 0, function () {
             var apiKey, file, fileId_1, reader;
             var _this = this;
@@ -62,57 +64,158 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                         console.log(fileId_1);
                         reader = new FileReader();
                         reader.onload = function (e) { return __awaiter(_this, void 0, void 0, function () {
-                            var fileContent, uniqueFields;
-                            var _this = this;
-                            return __generator(this, function (_a) {
-                                if (e.target && e.target.result && typeof e.target.result === 'string') {
-                                    try {
-                                        fileContent = JSON.parse(e.target.result);
-                                        fieldsContainer.innerHTML = '';
-                                        console.log(Object.keys(fileContent[0]));
-                                        uniqueFields = Object.keys(fileContent[0]);
-                                        uniqueFields.forEach(function (field) {
-                                            var fieldDiv = document.createElement('div');
-                                            var label = document.createElement('label');
-                                            var checkbox = document.createElement('input');
-                                            var responseDisplay = document.createElement('pre');
-                                            checkbox.type = 'checkbox';
-                                            checkbox.value = field;
-                                            label.appendChild(checkbox);
-                                            label.appendChild(document.createTextNode(field));
-                                            fieldsContainer.appendChild(fieldDiv);
-                                            fieldDiv.appendChild(label);
-                                            fieldDiv.appendChild(responseDisplay);
-                                            checkbox.addEventListener('change', function () { return __awaiter(_this, void 0, void 0, function () {
-                                                var response, error_1;
-                                                return __generator(this, function (_a) {
-                                                    switch (_a.label) {
-                                                        case 0:
-                                                            if (!checkbox.checked) return [3 /*break*/, 4];
-                                                            _a.label = 1;
-                                                        case 1:
-                                                            _a.trys.push([1, 3, , 4]);
-                                                            return [4 /*yield*/, fetchOpenAI(apiKey, fileId_1, field)];
-                                                        case 2:
-                                                            response = _a.sent();
-                                                            responseDisplay.textContent = extractAndParseJSON(response);
-                                                            return [3 /*break*/, 4];
-                                                        case 3:
-                                                            error_1 = _a.sent();
-                                                            console.error('Error:', error_1);
-                                                            responseDisplay.textContent = 'Error occurred';
-                                                            return [3 /*break*/, 4];
-                                                        case 4: return [2 /*return*/];
-                                                    }
-                                                });
-                                            }); });
-                                        });
-                                    }
-                                    catch (error) {
-                                        console.error('Error parsing JSON:', error);
+                            function createTree(data) {
+                                var ul = document.createElement('ul');
+                                data.forEach(function (item, index) {
+                                    var fieldLi = document.createElement('li');
+                                    fieldLi.classList.add('tree-item', 'field-item');
+                                    fieldLi.textContent = item.fieldName;
+                                    fieldLi.id = 'field-item-' + index;
+                                    // Create sublist for bins
+                                    var binsUl = document.createElement('ul');
+                                    binsUl.classList.add('hidden', 'bins-list');
+                                    item.bins.forEach(function (bin, binIndex) {
+                                        var binLi = document.createElement('li');
+                                        if (binIndex !== 0) {
+                                            binLi.classList.add('hidden');
+                                        }
+                                        binLi.classList.add('bin-item');
+                                        binLi.textContent = bin.bin_name;
+                                        // Create a sublist for bin reasoning and pred information
+                                        var detailsUl = document.createElement('ul');
+                                        detailsUl.classList.add('hidden', 'details-list');
+                                        var reasoningLi = document.createElement('li');
+                                        reasoningLi.textContent = 'Reasoning: ' + bin.pred.reasoning;
+                                        detailsUl.appendChild(reasoningLi);
+                                        var predLi = document.createElement('li');
+                                        predLi.textContent = 'Pred: ' + JSON.stringify(bin.pred);
+                                        detailsUl.appendChild(predLi);
+                                        binLi.appendChild(detailsUl);
+                                        binsUl.appendChild(binLi);
+                                    });
+                                    fieldLi.appendChild(binsUl);
+                                    ul.appendChild(fieldLi);
+                                });
+                                return ul;
+                            }
+                            function updateSelection(index) {
+                                var allFields = fieldsContainer.querySelectorAll('.field-item');
+                                // Check if the index is within the valid range
+                                if (index >= 0 && index < allFields.length) {
+                                    // Remove 'selected' class from all fields
+                                    allFields.forEach(function (item) {
+                                        item.classList.remove('selected');
+                                    });
+                                    // Add 'selected' class to the new active field
+                                    var selectedField = document.getElementById('field-item-' + index);
+                                    if (selectedField) {
+                                        selectedField.classList.add('selected');
+                                        currentSelectedIndex = index; // Update the current index
                                     }
                                 }
-                                return [2 /*return*/];
+                            }
+                            function toggleVisibility(element) {
+                                if (element) {
+                                    element.classList.toggle('hidden');
+                                }
+                            }
+                            var fileContent, uniqueFields, _i, uniqueFields_1, field, response, parsedResponse, bins, error_1, currentLevel_1, error_2;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0:
+                                        if (!(e.target && e.target.result && typeof e.target.result === 'string')) return [3 /*break*/, 9];
+                                        _a.label = 1;
+                                    case 1:
+                                        _a.trys.push([1, 8, , 9]);
+                                        fileContent = JSON.parse(e.target.result);
+                                        fieldsContainer.innerHTML = '';
+                                        uniqueFields = Object.keys(fileContent[0]);
+                                        // Display a loading message
+                                        fieldsContainer.innerHTML = '<p>Loading GPT response...</p>';
+                                        _i = 0, uniqueFields_1 = uniqueFields;
+                                        _a.label = 2;
+                                    case 2:
+                                        if (!(_i < uniqueFields_1.length)) return [3 /*break*/, 7];
+                                        field = uniqueFields_1[_i];
+                                        _a.label = 3;
+                                    case 3:
+                                        _a.trys.push([3, 5, , 6]);
+                                        return [4 /*yield*/, fetchOpenAI(apiKey, fileId_1, field)];
+                                    case 4:
+                                        response = _a.sent();
+                                        parsedResponse = extractAndParseJSON(response);
+                                        bins = parsedResponse.bins;
+                                        console.log({ "fieldName": field, "bins": bins });
+                                        data.push({ "fieldName": field, "bins": bins });
+                                        return [3 /*break*/, 6];
+                                    case 5:
+                                        error_1 = _a.sent();
+                                        console.error('Error:', error_1);
+                                        fieldsContainer.innerHTML = '<p>Error loading data.</p>';
+                                        return [3 /*break*/, 7]; // Break out of the loop on error
+                                    case 6:
+                                        _i++;
+                                        return [3 /*break*/, 2];
+                                    case 7:
+                                        fieldsContainer.appendChild(createTree(data));
+                                        updateSelection(currentSelectedIndex);
+                                        currentLevel_1 = 'field';
+                                        document.addEventListener('keydown', function (e) {
+                                            var selectedField = document.getElementById('field-item-' + currentSelectedIndex);
+                                            var binsList = selectedField.querySelector('.bins-list');
+                                            var selectedBin = binsList.querySelector('.bin-item:not(.hidden)');
+                                            var detailsList = selectedBin ? selectedBin.querySelector('.details-list') : null;
+                                            var totalFields = data.length;
+                                            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                                                if (currentLevel_1 === 'field') {
+                                                    // Navigate between fields
+                                                    currentSelectedIndex = (e.key === 'ArrowRight')
+                                                        ? (currentSelectedIndex + 1) % totalFields
+                                                        : (currentSelectedIndex - 1 + totalFields) % totalFields;
+                                                    updateSelection(currentSelectedIndex);
+                                                    currentLevel_1 = 'field';
+                                                }
+                                                else if (currentLevel_1 === 'bin') {
+                                                    // Navigate between bins
+                                                    var nextBin = (e.key === 'ArrowRight')
+                                                        ? selectedBin.nextElementSibling
+                                                        : selectedBin.previousElementSibling;
+                                                    if (nextBin) {
+                                                        selectedBin.classList.add('hidden');
+                                                        nextBin.classList.remove('hidden');
+                                                        selectedBin = nextBin; // Update selectedBin to the new bin
+                                                    }
+                                                }
+                                            }
+                                            else if (e.key === 'ArrowDown') {
+                                                if (currentLevel_1 === 'field' && binsList.classList.contains('hidden')) {
+                                                    binsList.classList.remove('hidden');
+                                                    currentLevel_1 = 'bin';
+                                                }
+                                                else if (currentLevel_1 === 'bin' && detailsList && detailsList.classList.contains('hidden')) {
+                                                    detailsList.classList.remove('hidden');
+                                                    currentLevel_1 = 'details';
+                                                }
+                                            }
+                                            else if (e.key === 'ArrowUp') {
+                                                if (currentLevel_1 === 'details' && detailsList && !detailsList.classList.contains('hidden')) {
+                                                    detailsList.classList.add('hidden');
+                                                    currentLevel_1 = 'bin';
+                                                }
+                                                else if (currentLevel_1 === 'bin' && !binsList.classList.contains('hidden')) {
+                                                    binsList.classList.add('hidden');
+                                                    currentLevel_1 = 'field';
+                                                }
+                                            }
+                                        });
+                                        return [3 /*break*/, 9];
+                                    case 8:
+                                        error_2 = _a.sent();
+                                        console.error('Error parsing JSON:', error_2);
+                                        fieldsContainer.innerHTML = '<p>Error processing file.</p>';
+                                        return [3 /*break*/, 9];
+                                    case 9: return [2 /*return*/];
+                                }
                             });
                         }); };
                         reader.readAsText(file);
@@ -167,7 +270,7 @@ function fetchOpenAI(apiKey, fileId, field) {
                             'OpenAI-Beta': 'assistants=v1'
                         },
                         body: JSON.stringify({
-                            instructions: "Please analyze the uploaded dataset. For a field in the dataset, you will format all of it's binnings \n                using the Vega-Lite predicate formatting. For a bin, a field must be provided along with one of \n                the predicate properties: equal, lt (less than), lte (less than or equal), gt (greater than), \n                gte (greater than or equal), range, or oneOf.\n                \n                For example, if we have:\n\n                {\n                    \"field\": \"Displacement\",\n                    \"field_bins\": [\"Compact\", \"Mid-Size\", \"Full-Size\"]\n                },\n                \n                You should output:\n                \n                [\n                    {\n                        \"bin_name\": \"Compact\",\n                        \"pred\": {\n                        \"field\": \"Displacement\",\n                        \"lte\": 100,\n                        \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"Mid-Size\",\n                        \"pred\": {\n                        \"field\": \"Displacement\",\n                        \"range\": [101, 150],\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"Full-Size\",\n                        \"pred\": {\n                        \"field\": \"Displacement\",\n                        \"gt\": 150,\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    }\n                ]\n\n                Another example, if we have:\n\n                {\n                    \"field\": \"car_origin\",\n                    \"field_bins\": [\"Japan\", \"USA\", \"France\"]\n                },\n                \n                You should output:\n                \n                [\n                    {\n                        \"bin_name\": \"Japan\",\n                        \"pred\": {\n                        \"field\": \"car_origin\",\n                        \"oneOf\": [\"nissan\", \"lexus\"],\n                        \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"USA\",\n                        \"pred\": {\n                        \"field\": \"car_origin\",\n                        \"oneOf\": [\"ford\", \"ram\"],\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    },\n                    {\n                        \"bin_name\": \"France\",\n                        \"pred\": {\n                        \"field\": \"car_origin\",\n                        \"oneOf\": [\"renault\", \"citroen\"],\n                        \"reasoning\": [insert detailed reasoning for bin]\n                        }\n                    }\n                ]",
+                            instructions: "Please analyze the uploaded dataset. For a field in the dataset, you will format all of it's binnings \n                using the Vega-Lite predicate formatting. For a bin, a field must be provided along with one of \n                the predicate properties: equal, lt (less than), lte (less than or equal), gt (greater than), \n                gte (greater than or equal), range, or oneOf.\n                \n                For example, if we have:\n\n                {\n                    \"field\": \"Displacement\",\n                    \"field_bins\": [\"Compact\", \"Mid-Size\", \"Full-Size\"]\n                },\n                \n                You should output:\n                \n                { bins: [\n                        {\n                            \"bin_name\": \"Compact\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"lte\": 100,\n                            \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"Mid-Size\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"range\": [101, 150],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"Full-Size\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"gt\": 150,\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        }\n                    ]\n                }\n\n                Another example, if we have:\n\n                {\n                    \"field\": \"car_origin\",\n                    \"field_bins\": [\"Japan\", \"USA\", \"France\"]\n                },\n                \n                You should output:\n                \n                { bins: [\n                        {\n                            \"bin_name\": \"Japan\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"nissan\", \"lexus\"],\n                            \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"USA\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"ford\", \"ram\"],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"France\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"renault\", \"citroen\"],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        }\n                    ]\n                }",
                             model: "gpt-4-1106-preview",
                             tools: [{ "type": "retrieval" }],
                             file_ids: [fileId]
@@ -195,7 +298,7 @@ function fetchOpenAI(apiKey, fileId, field) {
                                 "thread": {
                                     "messages": [
                                         { "role": "user",
-                                            "content": "For the ".concat(field, " in the data, please create a way of breaking down this data in a non-obvious way that includes the semantic \n                        meaning of the data with the following JSON format.\n            \n                        [\n                            {\n                                \"bin_name\": [insert bin name],\n                                \"pred\": {\n                                    [fill in predicate information]\n                                }\n                            }\n                        ]\n                        \n                        ")
+                                            "content": "For the ".concat(field, " in the data, please create a way of breaking down this data in a non-obvious way that \n                        includes the semantic meaning of the data with the following JSON format.\n            \n                        {bins: [\n                                {\n                                    \"bin_name\": [insert bin name],\n                                    \"pred\": {\n                                        [fill in predicate information]\n                                    }\n                                }\n                            ]\n                        }\n                        \n                        ")
                                         }
                                     ]
                                 }
@@ -275,8 +378,8 @@ function extractAndParseJSON(text) {
     if (match && match[1]) {
         try {
             var jsonString = match[1].trim();
-            // const jsonData = JSON.parse(jsonString);
-            return jsonString;
+            var jsonData = JSON.parse(jsonString);
+            return jsonData;
         }
         catch (error) {
             console.error('Error parsing JSON:', error);
