@@ -4,65 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LLM Semantic Binning</title>
-    <style>
-        /* Existing CSS */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: #000000;
-            line-height: 1.6;
-        }
-
-        h1 {
-            padding: 1rem;
-            text-align: center;
-        }
-
-        label, input, button {
-            display: block;
-            width: 30%;
-            padding: 10px;
-            margin: auto; /* Center align form elements */
-        }
-
-        input, button {
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        button {
-            background: #9c9b9b;
-            color: #fff;
-            border: 0;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #4a4747;
-        }
-
-        /* Additional CSS for Tree View */
-        .tree-item {
-            cursor: pointer;
-            padding: 5px;
-            border: 1px solid #ccc;
-            margin: 5px;
-        }
-
-        .tree-item > ul {
-            padding-left: 20px;
-        }
-
-        .selected {
-            background-color: #e0e0e0;
-        }
-
-        .hidden {
-            display: none;
-        }
-    </style>
 </head>
 <body>
 
@@ -73,20 +14,22 @@
 
     <label for="fileDropdown">Please select a dataset JSON file</label>
     <select id="fileDropdown">
-        <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/anscombe.json?raw=true">anscombe.json</option>
-        <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/barley.json?raw=true">barley.json</option>
-        <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/cars.json?raw=true">cars.json</option>
-        <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/driving.json?raw=true">driving.json</option>
-        <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/wheat.json?raw=true">wheat.json</option>
+        <option value="https://cors-anywhere.herokuapp.com/https://github.com/mitvis/llm-binning/blob/main/datasets/anscombe.json?raw=true">anscombe.json</option>
+        <option value="https://cors-anywhere.herokuapp.com/https://github.com/mitvis/llm-binning/blob/main/datasets/barley.json?raw=true">barley.json</option>
+        <option value="https://cors-anywhere.herokuapp.com/https://github.com/mitvis/llm-binning/blob/main/datasets/cars.json?raw=true">cars.json</option>
+        <option value="https://cors-anywhere.herokuapp.com/https://github.com/mitvis/llm-binning/blob/main/datasets/driving.json?raw=true">driving.json</option>
+        <option value="https://cors-anywhere.herokuapp.com/https://github.com/mitvis/llm-binning/blob/main/datasets/wheat.json?raw=true">wheat.json</option>
         <!-- <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/cars.json?raw=true">cars.json</option> -->
     </select>
 
-    <button id="uploadButton">Get Dataset Binnings</button>
+    <button id="uploadButton">Get Dataset Fields</button>
+
+    <div id="instructionsContainer"></div>
 
     <div id="fieldsContainer"></div>
 
     <script src="./dist/main.js"></script>
-    <script>
+    <!-- <script>
         document.getElementById('uploadButton').addEventListener('click', function() {
             var selectedFile = document.getElementById('fileDropdown').value;
             fetch(selectedFile)
@@ -99,7 +42,7 @@
                     console.error('Error fetching the file:', error);
                 });
         });
-    </script>
+    </script> -->
 </body>
 </html>
 

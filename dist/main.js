@@ -1,3 +1,4 @@
+// import * as jsoncParser from 'jsonc-parser';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,90 +35,172 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-import * as jsoncParser from 'jsonc-parser';
-document.addEventListener('DOMContentLoaded', function () { return __awaiter(void 0, void 0, void 0, function () {
-    var fileInput, uploadButton, fieldsContainer, apiKeyInput, currentSelectedIndex, data;
+var _this = this;
+document.addEventListener('DOMContentLoaded', function () { return __awaiter(_this, void 0, void 0, function () {
+    var fileDropdown, uploadButton, fieldsContainer, instructionsContainer, apiKeyInput;
+    var _this = this;
     return __generator(this, function (_a) {
-        fileInput = document.getElementById('fileInput');
+        fileDropdown = document.getElementById('fileDropdown');
         uploadButton = document.getElementById('uploadButton');
         fieldsContainer = document.getElementById('fieldsContainer');
+        instructionsContainer = document.getElementById('instructionsContainer');
         apiKeyInput = document.getElementById('apiKeyInput');
-        currentSelectedIndex = 0;
-        data = [];
-        uploadButton.addEventListener('click', function () { return __awaiter(void 0, void 0, void 0, function () {
-            var apiKey, file, fileId_1, reader;
+        uploadButton.addEventListener('click', function () { return __awaiter(_this, void 0, void 0, function () {
+            var apiKey, selectedFile;
+            var _this = this;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        apiKey = apiKeyInput.value;
-                        if (!apiKey) {
-                            alert("Please enter the API key.");
-                            return [2 /*return*/];
-                        }
-                        if (!(fileInput.files && fileInput.files.length > 0)) return [3 /*break*/, 2];
-                        file = fileInput.files[0];
-                        return [4 /*yield*/, uploadFileGPT(apiKey, file)];
-                    case 1:
-                        fileId_1 = _a.sent();
-                        console.log(fileId_1);
-                        reader = new FileReader();
-                        reader.onload = function (e) { return __awaiter(void 0, void 0, void 0, function () {
-                            var fileContent, uniqueFields, _i, uniqueFields_1, field, response, parsedResponse, bins, error_1, error_2;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        if (!(e.target && e.target.result && typeof e.target.result === 'string')) return [3 /*break*/, 9];
-                                        _a.label = 1;
-                                    case 1:
-                                        _a.trys.push([1, 8, , 9]);
-                                        fileContent = JSON.parse(e.target.result);
-                                        fieldsContainer.innerHTML = '';
-                                        uniqueFields = Object.keys(fileContent[0]);
-                                        // Display a loading message
-                                        fieldsContainer.innerHTML = '<p>Loading GPT response...</p>';
-                                        _i = 0, uniqueFields_1 = uniqueFields;
-                                        _a.label = 2;
-                                    case 2:
-                                        if (!(_i < uniqueFields_1.length)) return [3 /*break*/, 7];
-                                        field = uniqueFields_1[_i];
-                                        _a.label = 3;
-                                    case 3:
-                                        _a.trys.push([3, 5, , 6]);
-                                        return [4 /*yield*/, fetchOpenAI(apiKey, fileId_1, field)];
-                                    case 4:
-                                        response = _a.sent();
-                                        parsedResponse = extractAndParseJSON(response);
-                                        bins = parsedResponse.bins;
-                                        console.log({ "fieldName": field, "bins": bins });
-                                        data.push({ "fieldName": field, "bins": bins });
-                                        return [3 /*break*/, 6];
-                                    case 5:
-                                        error_1 = _a.sent();
-                                        console.error('Error:', error_1);
-                                        fieldsContainer.innerHTML = '<p>Error loading data.</p>';
-                                        return [3 /*break*/, 7]; // Break out of the loop on error
-                                    case 6:
-                                        _i++;
-                                        return [3 /*break*/, 2];
-                                    case 7: return [3 /*break*/, 9];
-                                    case 8:
-                                        error_2 = _a.sent();
-                                        console.error('Error parsing JSON:', error_2);
-                                        fieldsContainer.innerHTML = '<p>Error processing file.</p>';
-                                        return [3 /*break*/, 9];
-                                    case 9: return [2 /*return*/];
-                                }
-                            });
-                        }); };
-                        reader.readAsText(file);
-                        _a.label = 2;
-                    case 2: return [2 /*return*/];
+                instructionsContainer.innerHTML = '<p>To get the bins for a field, please click on the checkbox for that field.<p/>';
+                apiKey = apiKeyInput.value;
+                if (!apiKey) {
+                    alert("Please enter the API key.");
+                    return [2 /*return*/];
                 }
+                selectedFile = fileDropdown.value;
+                if (selectedFile) {
+                    fetch(selectedFile)
+                        .then(function (response) { return response.json(); })
+                        .then(function (fileContent) { return __awaiter(_this, void 0, void 0, function () {
+                        var uniqueFields;
+                        var _this = this;
+                        return __generator(this, function (_a) {
+                            console.log(fileContent);
+                            fieldsContainer.innerHTML = '';
+                            uniqueFields = Object.keys(fileContent[0]);
+                            uniqueFields.forEach(function (field) {
+                                // Create checkbox for each field
+                                var checkbox = document.createElement('input');
+                                checkbox.type = 'checkbox';
+                                checkbox.id = field;
+                                checkbox.name = field;
+                                // Create label for checkbox
+                                var label = document.createElement('label');
+                                label.htmlFor = field;
+                                label.textContent = field;
+                                // Create container for the response
+                                var responseContainer = document.createElement('div');
+                                responseContainer.id = "response-".concat(field);
+                                // Append checkbox, label, and response container to fieldsContainer
+                                fieldsContainer.appendChild(checkbox);
+                                fieldsContainer.appendChild(label);
+                                fieldsContainer.appendChild(responseContainer);
+                                fieldsContainer.appendChild(document.createElement('br'));
+                                // Event listener for checkbox
+                                checkbox.addEventListener('change', function (event) { return __awaiter(_this, void 0, void 0, function () {
+                                    var fieldValues, response, parsedResponse, bins, binsContainer_1, error_1;
+                                    return __generator(this, function (_a) {
+                                        switch (_a.label) {
+                                            case 0:
+                                                if (!checkbox.checked) return [3 /*break*/, 5];
+                                                _a.label = 1;
+                                            case 1:
+                                                _a.trys.push([1, 3, , 4]);
+                                                responseContainer.innerHTML = "Loading GPT Response";
+                                                fieldValues = getUniqueValues(fileContent, field);
+                                                console.log(fieldValues);
+                                                return [4 /*yield*/, fetchOpenAI(apiKey, fieldValues, field)];
+                                            case 2:
+                                                response = _a.sent();
+                                                parsedResponse = extractAndParseJSON(response);
+                                                bins = parsedResponse.bins;
+                                                console.log(bins);
+                                                binsContainer_1 = document.createElement('div');
+                                                binsContainer_1.id = 'binsContainer';
+                                                // Iterate over the bins and create a button for each
+                                                bins.forEach(function (bin) {
+                                                    // Create a container for each bin's buttons
+                                                    var binButtonContainer = document.createElement('div');
+                                                    // Create a label for the bin
+                                                    var binLabel = document.createElement('label');
+                                                    binLabel.textContent = "Bin: ".concat(bin.bin_name);
+                                                    binButtonContainer.appendChild(binLabel);
+                                                    binButtonContainer.appendChild(document.createElement('br')); // Line break for better formatting
+                                                    // Create button for showing reasoning
+                                                    var reasoningButton = document.createElement('button');
+                                                    reasoningButton.textContent = "Show Reasoning for ".concat(bin.bin_name);
+                                                    // Create a paragraph element to display the reasoning
+                                                    var reasoningText = document.createElement('p');
+                                                    reasoningText.id = "reasoning-".concat(bin.bin_name);
+                                                    reasoningText.style.display = 'none'; // Initially hide the reasoning text
+                                                    reasoningButton.addEventListener('click', function () {
+                                                        // Toggle visibility of the reasoning text
+                                                        if (reasoningText.style.display === 'none') {
+                                                            reasoningText.style.display = 'block';
+                                                            reasoningText.textContent = bin.pred.reasoning;
+                                                        }
+                                                        else {
+                                                            reasoningText.style.display = 'none';
+                                                            reasoningText.textContent = '';
+                                                        }
+                                                    });
+                                                    binButtonContainer.appendChild(reasoningButton);
+                                                    binButtonContainer.appendChild(reasoningText);
+                                                    // Create button for showing values
+                                                    var valuesButton = document.createElement('button');
+                                                    valuesButton.textContent = "Show Values for ".concat(bin.bin_name);
+                                                    // Create a paragraph element to display the values
+                                                    var valuesText = document.createElement('p');
+                                                    valuesText.id = "values-".concat(bin.bin_name);
+                                                    valuesText.style.display = 'none'; // Initially hide the values text
+                                                    valuesButton.addEventListener('click', function () {
+                                                        // Toggle visibility of the values text
+                                                        if (valuesText.style.display === 'none') {
+                                                            valuesText.style.display = 'block';
+                                                            valuesText.textContent = "Values: TODO";
+                                                        }
+                                                        else {
+                                                            valuesText.style.display = 'none';
+                                                            valuesText.textContent = '';
+                                                        }
+                                                    });
+                                                    binButtonContainer.appendChild(valuesButton);
+                                                    binButtonContainer.appendChild(valuesText);
+                                                    binsContainer_1.appendChild(binButtonContainer);
+                                                });
+                                                // Display response - Modify according to your actual response format
+                                                responseContainer.innerHTML = "";
+                                                responseContainer.appendChild(binsContainer_1);
+                                                return [3 /*break*/, 4];
+                                            case 3:
+                                                error_1 = _a.sent();
+                                                console.error('Error:', error_1);
+                                                responseContainer.innerHTML = '<p>Error processing field.</p>';
+                                                return [3 /*break*/, 4];
+                                            case 4: return [3 /*break*/, 6];
+                                            case 5:
+                                                // Clear the response container if the checkbox is unchecked
+                                                responseContainer.innerHTML = '';
+                                                _a.label = 6;
+                                            case 6: return [2 /*return*/];
+                                        }
+                                    });
+                                }); });
+                            });
+                            return [2 /*return*/];
+                        });
+                    }); })
+                        .catch(function (error) {
+                        console.error('Error fetching the file:', error);
+                        fieldsContainer.innerHTML = '<p>Error loading file.</p>';
+                    });
+                }
+                else {
+                    alert("Please select a file.");
+                }
+                return [2 /*return*/];
             });
         }); });
         return [2 /*return*/];
     });
 }); });
+function getUniqueValues(jsonArray, fieldName) {
+    var uniqueValues = new Set();
+    jsonArray.forEach(function (item) {
+        if (item.hasOwnProperty(fieldName)) {
+            uniqueValues.add(item[fieldName]);
+        }
+    });
+    return Array.from(uniqueValues);
+}
 function uploadFileGPT(apiKey, file) {
     return __awaiter(this, void 0, void 0, function () {
         var formData, uploadDataset, responseData, fileId;
@@ -148,7 +231,7 @@ function uploadFileGPT(apiKey, file) {
         });
     });
 }
-function fetchOpenAI(apiKey, fileId, field) {
+function fetchOpenAI(apiKey, fieldValues, field) {
     return __awaiter(this, void 0, void 0, function () {
         var createAssistant, responseData, assistantId, sendMessage, runData, runId, threadId, checkRunStatus, getMessages, messages;
         return __generator(this, function (_a) {
@@ -164,7 +247,7 @@ function fetchOpenAI(apiKey, fileId, field) {
                             instructions: "Please analyze the uploaded dataset. For a field in the dataset, you will format all of it's binnings \n                using the Vega-Lite predicate formatting. For a bin, a field must be provided along with one of \n                the predicate properties: equal, lt (less than), lte (less than or equal), gt (greater than), \n                gte (greater than or equal), range, or oneOf.\n                \n                For example, if we have:\n\n                {\n                    \"field\": \"Displacement\",\n                    \"field_bins\": [\"Compact\", \"Mid-Size\", \"Full-Size\"]\n                },\n                \n                You should output:\n                \n                { bins: [\n                        {\n                            \"bin_name\": \"Compact\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"lte\": 100,\n                            \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"Mid-Size\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"range\": [101, 150],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"Full-Size\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"gt\": 150,\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        }\n                    ]\n                }\n\n                Another example, if we have:\n\n                {\n                    \"field\": \"car_origin\",\n                    \"field_bins\": [\"Japan\", \"USA\", \"France\"]\n                },\n                \n                You should output:\n                \n                { bins: [\n                        {\n                            \"bin_name\": \"Japan\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"nissan\", \"lexus\"],\n                            \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"USA\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"ford\", \"ram\"],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"France\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"renault\", \"citroen\"],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        }\n                    ]\n                }",
                             model: "gpt-4-1106-preview",
                             tools: [{ "type": "retrieval" }],
-                            file_ids: [fileId]
+                            // file_ids: [fileId]
                         })
                     })];
                 case 1:
@@ -188,8 +271,13 @@ function fetchOpenAI(apiKey, fileId, field) {
                                 "assistant_id": "".concat(assistantId),
                                 "thread": {
                                     "messages": [
-                                        { "role": "user",
-                                            "content": "For the ".concat(field, " field in the data, please create a way of breaking down this data in a non-obvious way that \n                        includes the semantic meaning of the data with the following JSON format.\n            \n                        {bins: [\n                                {\n                                    \"bin_name\": [insert bin name],\n                                    \"pred\": {\n                                        [fill in predicate information]\n                                    }\n                                }\n                            ]\n                        }\n                        \n                        ")
+                                        {
+                                            "role": "user",
+                                            "content": "\n                        Here are all the possible values for the ".concat(field, " field in the data:\n\n                        ").concat(fieldValues, ".\n                        ")
+                                        },
+                                        {
+                                            "role": "user",
+                                            "content": "Create a way of breaking down this data in a non-obvious way that includes the semantic meaning of the data with the following JSON format.\n                        {\n                            bins : [\n                                {\n                                    bin_name: [insert bin name]\n                                    \"pred\" : {insert predicate information}\n                                }\n                            ]\n                        }\n                        "
                                         }
                                     ]
                                 }
@@ -269,7 +357,7 @@ function extractAndParseJSON(text) {
     if (match && match[1]) {
         try {
             var jsonString = match[1].trim();
-            var jsonData = jsoncParser.parse(jsonString);
+            var jsonData = JSON.parse(jsonString);
             return jsonData;
         }
         catch (error) {
