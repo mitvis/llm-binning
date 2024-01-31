@@ -1,4 +1,4 @@
-import * as jsoncParser from 'jsonc-parser';
+// import * as jsoncParser from 'jsonc-parser';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const fileDropdown = document.getElementById('fileDropdown') as HTMLSelectElement; // Dropdown element
@@ -401,7 +401,7 @@ function extractAndParseJSON(text) {
     if (match && match[1]) {
         try {
             const jsonString = match[1].trim();
-            const jsonData = jsoncParser.parse(jsonString);
+            const jsonData = JSON.parse(jsonString);
             return jsonData;
         } catch (error) {
             console.error('Error parsing JSON:', error);
