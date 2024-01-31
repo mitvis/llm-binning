@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                                         // Create a label for the bin
                                         const binLabel = document.createElement('label');
-                                        binLabel.textContent = `Bin: ${bin.bin_name}`;
+                                        binLabel.textContent = `${field} Bin: ${bin.bin_name}`;
                                         binButtonContainer.appendChild(binLabel);
                                         binButtonContainer.appendChild(document.createElement('br')); // Line break for better formatting
                                         
@@ -109,25 +109,61 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         valuesText.id = `values-${bin.bin_name}`;
                                         valuesText.style.display = 'none'; // Initially hide the values text
 
+                                        const table = document.createElement('table');
+                                        table.id = `table_values-${bin.bin_name}`;
+                                        table.style.display = 'none'; // Initially hide the values text
+
+                                        // Create table header
+                                        const headerRow = document.createElement('tr');
+                                        uniqueFields.forEach(col => {
+                                            const headerCell = document.createElement('th');
+                                            headerCell.textContent = col;
+                                            headerRow.appendChild(headerCell);
+                                        });
+                                        table.appendChild(headerRow);
+
                                         valuesButton.addEventListener('click', () => {
                                             // Toggle visibility of the values text
                                             if (valuesText.style.display === 'none') {
                                                 valuesButton.textContent = `Hide Values for ${bin.bin_name}`;
                                                 valuesText.style.display = 'block';
+                                                table.style.display = 'table';
+
                                                 console.log(getDataValues(fileContent, bin.pred));
+
                                                 const values = getDataValues(fileContent, bin.pred)
-                                                valuesText.textContent = `Number of values: ${values.length} \n`;
-                                                valuesText.textContent += `Values: ${JSON.stringify(values)}`;
+                                                const op = Object.keys(bin.pred).filter(item => item !== "field" && item !== "reasoning")[0]
+
+                                                valuesText.textContent = `Bin boundary: ${field} ${op} ${bin.pred[op]}. \n`;
+                                                valuesText.textContent += `Number of values in ${bin.bin_name} bin: ${values.length}. \n`;
+
+                                                // Clear previous rows
+                                                while (table.rows.length > 1) {
+                                                    table.deleteRow(1);
+                                                }
+
+                                                // Create data rows
+                                                values.forEach(item => {
+                                                    const row = document.createElement('tr');
+                                                    uniqueFields.forEach(col => {
+                                                        const cell = document.createElement('td');
+                                                        cell.textContent = item[col] || ''; // Handle missing data
+                                                        row.appendChild(cell);
+                                                    });
+                                                    table.appendChild(row);
+                                                });
 
                                             } else {
                                                 valuesButton.textContent = `Show Values for ${bin.bin_name}`;
                                                 valuesText.style.display = 'none';
+                                                table.style.display = 'none';
                                                 valuesText.textContent = '';
                                             }
                                         });
-
+                                        
                                         binButtonContainer.appendChild(valuesButton);
                                         binButtonContainer.appendChild(valuesText);
+                                        binButtonContainer.appendChild(table);
 
                                         binsContainer.appendChild(binButtonContainer);
                                     });
@@ -207,7 +243,7 @@ async function fetchOpenAI(apiKey, fieldValues, field) {
                 `Please analyze the uploaded dataset. For a field in the dataset, you will format all of it's binnings 
                 using the Vega-Lite predicate formatting. For a bin, a field must be provided along with one of 
                 the predicate properties: equal, lt (less than), lte (less than or equal), gt (greater than), 
-                gte (greater than or equal), range, or oneOf.
+                gte (greater than or equal), range, or oneOf to describe what data for that field belong in that bin.
                 
                 For example, if we have:
 
@@ -324,6 +360,7 @@ async function fetchOpenAI(apiKey, fieldValues, field) {
                         "role": "user", 
                         "content": 
                         `Create a way of breaking down this data in a non-obvious way that includes the semantic meaning of the data with the following JSON format.
+                        Make sure the predicate can map directly to the earlier values and that the JSON you output is a valid JSON.
                         {
                             bins : [
                                 {
@@ -421,8 +458,8 @@ function getDataValues(fileContent:any, pred: any) {
 
     switch (op) {
         case 'equal':
-            console.log(fileContent.filter(item => item[field] === Number(pred[op])))
-            return fileContent.filter(item => item[field] === Number(pred[op]));
+            console.log(fileContent.filter(item => [pred[op]].includes(item[field])))
+            return fileContent.filter(item => [pred[op]].includes(item[field]));
         case 'oneOf':
             console.log(fileContent.filter(item => pred[op].includes(item[field])))
             return fileContent.filter(item => pred[op].includes(item[field]));

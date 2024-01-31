@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                                     var binButtonContainer = document.createElement('div');
                                                     // Create a label for the bin
                                                     var binLabel = document.createElement('label');
-                                                    binLabel.textContent = "Bin: ".concat(bin.bin_name);
+                                                    binLabel.textContent = "".concat(field, " Bin: ").concat(bin.bin_name);
                                                     binButtonContainer.appendChild(binLabel);
                                                     binButtonContainer.appendChild(document.createElement('br')); // Line break for better formatting
                                                     // Create button for showing reasoning
@@ -143,24 +143,53 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                                     var valuesText = document.createElement('p');
                                                     valuesText.id = "values-".concat(bin.bin_name);
                                                     valuesText.style.display = 'none'; // Initially hide the values text
+                                                    var table = document.createElement('table');
+                                                    table.id = "table_values-".concat(bin.bin_name);
+                                                    table.style.display = 'none'; // Initially hide the values text
+                                                    // Create table header
+                                                    var headerRow = document.createElement('tr');
+                                                    uniqueFields.forEach(function (col) {
+                                                        var headerCell = document.createElement('th');
+                                                        headerCell.textContent = col;
+                                                        headerRow.appendChild(headerCell);
+                                                    });
+                                                    table.appendChild(headerRow);
                                                     valuesButton.addEventListener('click', function () {
                                                         // Toggle visibility of the values text
                                                         if (valuesText.style.display === 'none') {
                                                             valuesButton.textContent = "Hide Values for ".concat(bin.bin_name);
                                                             valuesText.style.display = 'block';
+                                                            table.style.display = 'table';
                                                             console.log(getDataValues(fileContent, bin.pred));
                                                             var values = getDataValues(fileContent, bin.pred);
-                                                            valuesText.textContent = "Number of values: ".concat(values.length, " \n");
-                                                            valuesText.textContent += "Values: ".concat(JSON.stringify(values));
+                                                            var op = Object.keys(bin.pred).filter(function (item) { return item !== "field" && item !== "reasoning"; })[0];
+                                                            valuesText.textContent = "Bin boundary: ".concat(field, " ").concat(op, " ").concat(bin.pred[op], ". \n");
+                                                            valuesText.textContent += "Number of values in ".concat(bin.bin_name, " bin: ").concat(values.length, ". \n");
+                                                            // Clear previous rows
+                                                            while (table.rows.length > 1) {
+                                                                table.deleteRow(1);
+                                                            }
+                                                            // Create data rows
+                                                            values.forEach(function (item) {
+                                                                var row = document.createElement('tr');
+                                                                uniqueFields.forEach(function (col) {
+                                                                    var cell = document.createElement('td');
+                                                                    cell.textContent = item[col] || ''; // Handle missing data
+                                                                    row.appendChild(cell);
+                                                                });
+                                                                table.appendChild(row);
+                                                            });
                                                         }
                                                         else {
                                                             valuesButton.textContent = "Show Values for ".concat(bin.bin_name);
                                                             valuesText.style.display = 'none';
+                                                            table.style.display = 'none';
                                                             valuesText.textContent = '';
                                                         }
                                                     });
                                                     binButtonContainer.appendChild(valuesButton);
                                                     binButtonContainer.appendChild(valuesText);
+                                                    binButtonContainer.appendChild(table);
                                                     binsContainer_1.appendChild(binButtonContainer);
                                                 });
                                                 // Display response - Modify according to your actual response format
@@ -251,7 +280,7 @@ function fetchOpenAI(apiKey, fieldValues, field) {
                             'OpenAI-Beta': 'assistants=v1'
                         },
                         body: JSON.stringify({
-                            instructions: "Please analyze the uploaded dataset. For a field in the dataset, you will format all of it's binnings \n                using the Vega-Lite predicate formatting. For a bin, a field must be provided along with one of \n                the predicate properties: equal, lt (less than), lte (less than or equal), gt (greater than), \n                gte (greater than or equal), range, or oneOf.\n                \n                For example, if we have:\n\n                {\n                    \"field\": \"Displacement\",\n                    \"field_bins\": [\"Compact\", \"Mid-Size\", \"Full-Size\"]\n                },\n                \n                You should output:\n                \n                { bins: [\n                        {\n                            \"bin_name\": \"Compact\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"lte\": 100,\n                            \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"Mid-Size\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"range\": [101, 150],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"Full-Size\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"gt\": 150,\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        }\n                    ]\n                }\n\n                Another example, if we have:\n\n                {\n                    \"field\": \"car_origin\",\n                    \"field_bins\": [\"Japan\", \"USA\", \"France\"]\n                },\n                \n                You should output:\n                \n                { bins: [\n                        {\n                            \"bin_name\": \"Japan\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"nissan\", \"lexus\"],\n                            \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"USA\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"ford\", \"ram\"],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"France\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"renault\", \"citroen\"],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        }\n                    ]\n                }",
+                            instructions: "Please analyze the uploaded dataset. For a field in the dataset, you will format all of it's binnings \n                using the Vega-Lite predicate formatting. For a bin, a field must be provided along with one of \n                the predicate properties: equal, lt (less than), lte (less than or equal), gt (greater than), \n                gte (greater than or equal), range, or oneOf to describe what data for that field belong in that bin.\n                \n                For example, if we have:\n\n                {\n                    \"field\": \"Displacement\",\n                    \"field_bins\": [\"Compact\", \"Mid-Size\", \"Full-Size\"]\n                },\n                \n                You should output:\n                \n                { bins: [\n                        {\n                            \"bin_name\": \"Compact\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"lte\": 100,\n                            \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"Mid-Size\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"range\": [101, 150],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"Full-Size\",\n                            \"pred\": {\n                            \"field\": \"Displacement\",\n                            \"gt\": 150,\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        }\n                    ]\n                }\n\n                Another example, if we have:\n\n                {\n                    \"field\": \"car_origin\",\n                    \"field_bins\": [\"Japan\", \"USA\", \"France\"]\n                },\n                \n                You should output:\n                \n                { bins: [\n                        {\n                            \"bin_name\": \"Japan\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"nissan\", \"lexus\"],\n                            \"reasoning\": [insert detailed reasoning for bin and its boundaries]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"USA\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"ford\", \"ram\"],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        },\n                        {\n                            \"bin_name\": \"France\",\n                            \"pred\": {\n                            \"field\": \"car_origin\",\n                            \"oneOf\": [\"renault\", \"citroen\"],\n                            \"reasoning\": [insert detailed reasoning for bin]\n                            }\n                        }\n                    ]\n                }",
                             model: "gpt-4-1106-preview",
                             tools: [{ "type": "retrieval" }],
                             // file_ids: [fileId]
@@ -284,7 +313,7 @@ function fetchOpenAI(apiKey, fieldValues, field) {
                                         },
                                         {
                                             "role": "user",
-                                            "content": "Create a way of breaking down this data in a non-obvious way that includes the semantic meaning of the data with the following JSON format.\n                        {\n                            bins : [\n                                {\n                                    bin_name: [insert bin name]\n                                    \"pred\" : {insert predicate information}\n                                }\n                            ]\n                        }\n                        "
+                                            "content": "Create a way of breaking down this data in a non-obvious way that includes the semantic meaning of the data with the following JSON format.\n                        Make sure the predicate can map directly to the earlier values and that the JSON you output is a valid JSON.\n                        {\n                            bins : [\n                                {\n                                    bin_name: [insert bin name]\n                                    \"pred\" : {insert predicate information}\n                                }\n                            ]\n                        }\n                        "
                                         }
                                     ]
                                 }
@@ -384,8 +413,8 @@ function getDataValues(fileContent, pred) {
     console.log(pred[op]);
     switch (op) {
         case 'equal':
-            console.log(fileContent.filter(function (item) { return item[field] === Number(pred[op]); }));
-            return fileContent.filter(function (item) { return item[field] === Number(pred[op]); });
+            console.log(fileContent.filter(function (item) { return [pred[op]].includes(item[field]); }));
+            return fileContent.filter(function (item) { return [pred[op]].includes(item[field]); });
         case 'oneOf':
             console.log(fileContent.filter(function (item) { return pred[op].includes(item[field]); }));
             return fileContent.filter(function (item) { return pred[op].includes(item[field]); });
