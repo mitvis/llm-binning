@@ -1,4 +1,3 @@
-// import * as jsoncParser from 'jsonc-parser';
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,19 +34,17 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _this = this;
-document.addEventListener('DOMContentLoaded', function () { return __awaiter(_this, void 0, void 0, function () {
+import * as jsoncParser from 'jsonc-parser';
+document.addEventListener('DOMContentLoaded', function () { return __awaiter(void 0, void 0, void 0, function () {
     var fileDropdown, uploadButton, fieldsContainer, instructionsContainer, apiKeyInput;
-    var _this = this;
     return __generator(this, function (_a) {
         fileDropdown = document.getElementById('fileDropdown');
         uploadButton = document.getElementById('uploadButton');
         fieldsContainer = document.getElementById('fieldsContainer');
         instructionsContainer = document.getElementById('instructionsContainer');
         apiKeyInput = document.getElementById('apiKeyInput');
-        uploadButton.addEventListener('click', function () { return __awaiter(_this, void 0, void 0, function () {
+        uploadButton.addEventListener('click', function () { return __awaiter(void 0, void 0, void 0, function () {
             var apiKey, selectedFile;
-            var _this = this;
             return __generator(this, function (_a) {
                 instructionsContainer.innerHTML = '<p>To get the bins for a field, please click on the checkbox for that field.<p/>';
                 apiKey = apiKeyInput.value;
@@ -57,11 +54,10 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                 }
                 selectedFile = fileDropdown.value;
                 if (selectedFile) {
-                    fetch(selectedFile)
+                    fetch(selectedFile, { headers: { 'Access-Control-Allow-Origin': '*' } })
                         .then(function (response) { return response.json(); })
-                        .then(function (fileContent) { return __awaiter(_this, void 0, void 0, function () {
+                        .then(function (fileContent) { return __awaiter(void 0, void 0, void 0, function () {
                         var uniqueFields;
-                        var _this = this;
                         return __generator(this, function (_a) {
                             console.log(fileContent);
                             fieldsContainer.innerHTML = '';
@@ -85,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                 fieldsContainer.appendChild(responseContainer);
                                 fieldsContainer.appendChild(document.createElement('br'));
                                 // Event listener for checkbox
-                                checkbox.addEventListener('change', function (event) { return __awaiter(_this, void 0, void 0, function () {
+                                checkbox.addEventListener('change', function (event) { return __awaiter(void 0, void 0, void 0, function () {
                                     var fieldValues, response, parsedResponse, bins, binsContainer_1, error_1;
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
@@ -124,10 +120,12 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                                     reasoningButton.addEventListener('click', function () {
                                                         // Toggle visibility of the reasoning text
                                                         if (reasoningText.style.display === 'none') {
+                                                            reasoningButton.textContent = "Hide Reasoning for ".concat(bin.bin_name);
                                                             reasoningText.style.display = 'block';
                                                             reasoningText.textContent = bin.pred.reasoning;
                                                         }
                                                         else {
+                                                            reasoningButton.textContent = "Show Reasoning for ".concat(bin.bin_name);
                                                             reasoningText.style.display = 'none';
                                                             reasoningText.textContent = '';
                                                         }
@@ -144,10 +142,15 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                                     valuesButton.addEventListener('click', function () {
                                                         // Toggle visibility of the values text
                                                         if (valuesText.style.display === 'none') {
+                                                            valuesButton.textContent = "Hide Values for ".concat(bin.bin_name);
                                                             valuesText.style.display = 'block';
-                                                            valuesText.textContent = "Values: TODO";
+                                                            console.log(getDataValues(fileContent, bin.pred));
+                                                            var values = getDataValues(fileContent, bin.pred);
+                                                            valuesText.textContent = "Number of values: ".concat(values.length, " \n");
+                                                            valuesText.textContent += "Values: ".concat(JSON.stringify(values));
                                                         }
                                                         else {
+                                                            valuesButton.textContent = "Show Values for ".concat(bin.bin_name);
                                                             valuesText.style.display = 'none';
                                                             valuesText.textContent = '';
                                                         }
@@ -357,7 +360,7 @@ function extractAndParseJSON(text) {
     if (match && match[1]) {
         try {
             var jsonString = match[1].trim();
-            var jsonData = JSON.parse(jsonString);
+            var jsonData = jsoncParser.parse(jsonString);
             return jsonData;
         }
         catch (error) {
@@ -368,5 +371,34 @@ function extractAndParseJSON(text) {
     else {
         console.log('No JSON found in the text.');
         return null;
+    }
+}
+function getDataValues(fileContent, pred) {
+    var field = pred.field;
+    var op = Object.keys(pred).filter(function (item) { return item !== "field" && item !== "reasoning"; })[0];
+    console.log(op);
+    console.log(pred[op]);
+    switch (op) {
+        case 'equal':
+            console.log(fileContent.filter(function (item) { return item[field] === Number(pred[op]); }));
+            return fileContent.filter(function (item) { return item[field] === Number(pred[op]); });
+        case 'oneOf':
+            console.log(fileContent.filter(function (item) { return pred[op].includes(item[field]); }));
+            return fileContent.filter(function (item) { return pred[op].includes(item[field]); });
+        case 'range':
+            console.log(fileContent.filter(function (item) { return item[field] >= Number(pred[op][0]) && item[field] <= Number(pred[op][1]); }));
+            return fileContent.filter(function (item) { return item[field] >= Number(pred[op][0]) && item[field] <= Number(pred[op][1]); });
+        case 'lt':
+            console.log(fileContent.filter(function (item) { return item[field] < Number(pred[op]); }));
+            return fileContent.filter(function (item) { return item[field] < Number(pred[op]); });
+        case 'lte':
+            console.log(fileContent.filter(function (item) { return item[field] <= Number(pred[op]); }));
+            return fileContent.filter(function (item) { return item[field] <= Number(pred[op]); });
+        case 'gt':
+            console.log(fileContent.filter(function (item) { return item[field] > Number(pred[op]); }));
+            return fileContent.filter(function (item) { return item[field] > Number(pred[op]); });
+        case 'gte':
+            console.log(fileContent.filter(function (item) { return item[field] >= Number(pred[op]); }));
+            return fileContent.filter(function (item) { return item[field] >= Number(pred[op]); });
     }
 }

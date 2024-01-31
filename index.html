@@ -19,7 +19,7 @@
         <option value="https://cors-anywhere.herokuapp.com/https://github.com/mitvis/llm-binning/blob/main/datasets/cars.json?raw=true">cars.json</option>
         <option value="https://cors-anywhere.herokuapp.com/https://github.com/mitvis/llm-binning/blob/main/datasets/driving.json?raw=true">driving.json</option>
         <option value="https://cors-anywhere.herokuapp.com/https://github.com/mitvis/llm-binning/blob/main/datasets/wheat.json?raw=true">wheat.json</option>
-        <!-- <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/cars.json?raw=true">cars.json</option> -->
+        <option value="https://cors-anywhere.herokuapp.com/https://github.com/mitvis/llm-binning/blob/main/datasets/budget.json?raw=true">budget.json</option>
     </select>
 
     <button id="uploadButton">Get Dataset Fields</button>
@@ -29,20 +29,6 @@
     <div id="fieldsContainer"></div>
 
     <script src="./dist/main.js"></script>
-    <!-- <script>
-        document.getElementById('uploadButton').addEventListener('click', function() {
-            var selectedFile = document.getElementById('fileDropdown').value;
-            fetch(selectedFile)
-                .then(response => response.json())
-                .then(data => {
-                    // Handle the data from the file
-                    console.log(data);
-                })
-                .catch(error => {
-                    console.error('Error fetching the file:', error);
-                });
-        });
-    </script> -->
 </body>
 </html>
 

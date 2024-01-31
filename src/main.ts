@@ -1,4 +1,4 @@
-// import * as jsoncParser from 'jsonc-parser';
+import * as jsoncParser from 'jsonc-parser';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const fileDropdown = document.getElementById('fileDropdown') as HTMLSelectElement; // Dropdown element
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const selectedFile = fileDropdown.value;
         if (selectedFile) {
-            fetch(selectedFile)
+            fetch(selectedFile, {headers: {'Access-Control-Allow-Origin': '*'}})
                 .then(response => response.json())
                 .then(async fileContent => {
                     console.log(fileContent);
@@ -87,9 +87,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         reasoningButton.addEventListener('click', () => {
                                             // Toggle visibility of the reasoning text
                                             if (reasoningText.style.display === 'none') {
+                                                reasoningButton.textContent = `Hide Reasoning for ${bin.bin_name}`;
                                                 reasoningText.style.display = 'block';
                                                 reasoningText.textContent = bin.pred.reasoning;
                                             } else {
+                                                reasoningButton.textContent = `Show Reasoning for ${bin.bin_name}`;
                                                 reasoningText.style.display = 'none';
                                                 reasoningText.textContent = '';
                                             }
@@ -110,9 +112,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         valuesButton.addEventListener('click', () => {
                                             // Toggle visibility of the values text
                                             if (valuesText.style.display === 'none') {
+                                                valuesButton.textContent = `Hide Values for ${bin.bin_name}`;
                                                 valuesText.style.display = 'block';
-                                                valuesText.textContent = `Values: TODO`;
+                                                console.log(getDataValues(fileContent, bin.pred));
+                                                const values = getDataValues(fileContent, bin.pred)
+                                                valuesText.textContent = `Number of values: ${values.length} \n`;
+                                                valuesText.textContent += `Values: ${JSON.stringify(values)}`;
+
                                             } else {
+                                                valuesButton.textContent = `Show Values for ${bin.bin_name}`;
                                                 valuesText.style.display = 'none';
                                                 valuesText.textContent = '';
                                             }
@@ -393,7 +401,7 @@ function extractAndParseJSON(text) {
     if (match && match[1]) {
         try {
             const jsonString = match[1].trim();
-            const jsonData = JSON.parse(jsonString);
+            const jsonData = jsoncParser.parse(jsonString);
             return jsonData;
         } catch (error) {
             console.error('Error parsing JSON:', error);
@@ -403,4 +411,35 @@ function extractAndParseJSON(text) {
         console.log('No JSON found in the text.');
         return null;
     }
+}
+
+function getDataValues(fileContent:any, pred: any) {
+    const field = pred.field;
+    const op = Object.keys(pred).filter(item => item !== "field" && item !== "reasoning")[0];
+    console.log(op)
+    console.log(pred[op])
+
+    switch (op) {
+        case 'equal':
+            console.log(fileContent.filter(item => item[field] === Number(pred[op])))
+            return fileContent.filter(item => item[field] === Number(pred[op]));
+        case 'oneOf':
+            console.log(fileContent.filter(item => pred[op].includes(item[field])))
+            return fileContent.filter(item => pred[op].includes(item[field]));
+        case 'range':
+            console.log(fileContent.filter(item => item[field] >= Number(pred[op][0]) && item[field] <= Number(pred[op][1])))
+            return fileContent.filter(item => item[field] >= Number(pred[op][0]) && item[field] <= Number(pred[op][1]));
+        case 'lt':
+            console.log(fileContent.filter(item => item[field] < Number(pred[op])))
+            return fileContent.filter(item => item[field] < Number(pred[op]));
+        case 'lte':
+            console.log(fileContent.filter(item => item[field] <= Number(pred[op])))
+            return fileContent.filter(item => item[field] <= Number(pred[op]));
+        case 'gt':
+            console.log(fileContent.filter(item => item[field] > Number(pred[op])))
+            return fileContent.filter(item => item[field] > Number(pred[op]));
+        case 'gte':
+            console.log(fileContent.filter(item => item[field] >= Number(pred[op])))
+            return fileContent.filter(item => item[field] >= Number(pred[op]));
+      }
 }
