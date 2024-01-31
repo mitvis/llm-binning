@@ -360,7 +360,8 @@ async function fetchOpenAI(apiKey, fieldValues, field) {
                         "role": "user", 
                         "content": 
                         `Create a way of breaking down this data in a non-obvious way that includes the semantic meaning of the data with the following JSON format.
-                        Make sure the predicate can map directly to the earlier values and that the JSON you output is a valid JSON.
+                        Make sure the predicate can map directly to the earlier values, that you include your reasoning, and that the JSON you output is a valid JSON 
+                        without comments.
                         {
                             bins : [
                                 {
