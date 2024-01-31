@@ -71,15 +71,35 @@
     <label for="apiKeyInput">Please input an OpenAI API Key below</label>
     <input type="text" id="apiKeyInput" placeholder="Enter API Key" />
 
-    <label for="fileInput">Please upload a dataset JSON file</label>
-    <input type="file" id="fileInput" accept=".json">
+    <label for="fileDropdown">Please select a dataset JSON file</label>
+    <select id="fileDropdown">
+        <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/anscombe.json?raw=true">anscombe.json</option>
+        <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/barley.json?raw=true">barley.json</option>
+        <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/cars.json?raw=true">cars.json</option>
+        <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/driving.json?raw=true">driving.json</option>
+        <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/wheat.json?raw=true">wheat.json</option>
+        <!-- <option value="https://github.com/mitvis/llm-binning/blob/main/datasets/cars.json?raw=true">cars.json</option> -->
+    </select>
 
     <button id="uploadButton">Get Dataset Binnings</button>
 
     <div id="fieldsContainer"></div>
 
-    <!-- Link to the compiled TypeScript file (as JavaScript) -->
     <script src="./dist/main.js"></script>
+    <script>
+        document.getElementById('uploadButton').addEventListener('click', function() {
+            var selectedFile = document.getElementById('fileDropdown').value;
+            fetch(selectedFile)
+                .then(response => response.json())
+                .then(data => {
+                    // Handle the data from the file
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.error('Error fetching the file:', error);
+                });
+        });
+    </script>
 </body>
 </html>
 

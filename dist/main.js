@@ -34,10 +34,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _this = this;
-document.addEventListener('DOMContentLoaded', function () { return __awaiter(_this, void 0, void 0, function () {
+import * as jsoncParser from 'jsonc-parser';
+document.addEventListener('DOMContentLoaded', function () { return __awaiter(void 0, void 0, void 0, function () {
     var fileInput, uploadButton, fieldsContainer, apiKeyInput, currentSelectedIndex, data;
-    var _this = this;
     return __generator(this, function (_a) {
         fileInput = document.getElementById('fileInput');
         uploadButton = document.getElementById('uploadButton');
@@ -45,9 +44,8 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
         apiKeyInput = document.getElementById('apiKeyInput');
         currentSelectedIndex = 0;
         data = [];
-        uploadButton.addEventListener('click', function () { return __awaiter(_this, void 0, void 0, function () {
+        uploadButton.addEventListener('click', function () { return __awaiter(void 0, void 0, void 0, function () {
             var apiKey, file, fileId_1, reader;
-            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -63,63 +61,8 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                         fileId_1 = _a.sent();
                         console.log(fileId_1);
                         reader = new FileReader();
-                        reader.onload = function (e) { return __awaiter(_this, void 0, void 0, function () {
-                            function createTree(data) {
-                                var ul = document.createElement('ul');
-                                data.forEach(function (item, index) {
-                                    var fieldLi = document.createElement('li');
-                                    fieldLi.classList.add('tree-item', 'field-item');
-                                    fieldLi.textContent = item.fieldName;
-                                    fieldLi.id = 'field-item-' + index;
-                                    // Create sublist for bins
-                                    var binsUl = document.createElement('ul');
-                                    binsUl.classList.add('hidden', 'bins-list');
-                                    item.bins.forEach(function (bin, binIndex) {
-                                        var binLi = document.createElement('li');
-                                        if (binIndex !== 0) {
-                                            binLi.classList.add('hidden');
-                                        }
-                                        binLi.classList.add('bin-item');
-                                        binLi.textContent = bin.bin_name;
-                                        // Create a sublist for bin reasoning and pred information
-                                        var detailsUl = document.createElement('ul');
-                                        detailsUl.classList.add('hidden', 'details-list');
-                                        var reasoningLi = document.createElement('li');
-                                        reasoningLi.textContent = 'Reasoning: ' + bin.pred.reasoning;
-                                        detailsUl.appendChild(reasoningLi);
-                                        var predLi = document.createElement('li');
-                                        predLi.textContent = 'Pred: ' + JSON.stringify(bin.pred);
-                                        detailsUl.appendChild(predLi);
-                                        binLi.appendChild(detailsUl);
-                                        binsUl.appendChild(binLi);
-                                    });
-                                    fieldLi.appendChild(binsUl);
-                                    ul.appendChild(fieldLi);
-                                });
-                                return ul;
-                            }
-                            function updateSelection(index) {
-                                var allFields = fieldsContainer.querySelectorAll('.field-item');
-                                // Check if the index is within the valid range
-                                if (index >= 0 && index < allFields.length) {
-                                    // Remove 'selected' class from all fields
-                                    allFields.forEach(function (item) {
-                                        item.classList.remove('selected');
-                                    });
-                                    // Add 'selected' class to the new active field
-                                    var selectedField = document.getElementById('field-item-' + index);
-                                    if (selectedField) {
-                                        selectedField.classList.add('selected');
-                                        currentSelectedIndex = index; // Update the current index
-                                    }
-                                }
-                            }
-                            function toggleVisibility(element) {
-                                if (element) {
-                                    element.classList.toggle('hidden');
-                                }
-                            }
-                            var fileContent, uniqueFields, _i, uniqueFields_1, field, response, parsedResponse, bins, error_1, currentLevel_1, error_2;
+                        reader.onload = function (e) { return __awaiter(void 0, void 0, void 0, function () {
+                            var fileContent, uniqueFields, _i, uniqueFields_1, field, response, parsedResponse, bins, error_1, error_2;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
@@ -156,59 +99,7 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                     case 6:
                                         _i++;
                                         return [3 /*break*/, 2];
-                                    case 7:
-                                        fieldsContainer.appendChild(createTree(data));
-                                        updateSelection(currentSelectedIndex);
-                                        currentLevel_1 = 'field';
-                                        document.addEventListener('keydown', function (e) {
-                                            var selectedField = document.getElementById('field-item-' + currentSelectedIndex);
-                                            var binsList = selectedField.querySelector('.bins-list');
-                                            var selectedBin = binsList.querySelector('.bin-item:not(.hidden)');
-                                            var detailsList = selectedBin ? selectedBin.querySelector('.details-list') : null;
-                                            var totalFields = data.length;
-                                            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-                                                if (currentLevel_1 === 'field') {
-                                                    // Navigate between fields
-                                                    currentSelectedIndex = (e.key === 'ArrowRight')
-                                                        ? (currentSelectedIndex + 1) % totalFields
-                                                        : (currentSelectedIndex - 1 + totalFields) % totalFields;
-                                                    updateSelection(currentSelectedIndex);
-                                                    currentLevel_1 = 'field';
-                                                }
-                                                else if (currentLevel_1 === 'bin') {
-                                                    // Navigate between bins
-                                                    var nextBin = (e.key === 'ArrowRight')
-                                                        ? selectedBin.nextElementSibling
-                                                        : selectedBin.previousElementSibling;
-                                                    if (nextBin) {
-                                                        selectedBin.classList.add('hidden');
-                                                        nextBin.classList.remove('hidden');
-                                                        selectedBin = nextBin; // Update selectedBin to the new bin
-                                                    }
-                                                }
-                                            }
-                                            else if (e.key === 'ArrowDown') {
-                                                if (currentLevel_1 === 'field' && binsList.classList.contains('hidden')) {
-                                                    binsList.classList.remove('hidden');
-                                                    currentLevel_1 = 'bin';
-                                                }
-                                                else if (currentLevel_1 === 'bin' && detailsList && detailsList.classList.contains('hidden')) {
-                                                    detailsList.classList.remove('hidden');
-                                                    currentLevel_1 = 'details';
-                                                }
-                                            }
-                                            else if (e.key === 'ArrowUp') {
-                                                if (currentLevel_1 === 'details' && detailsList && !detailsList.classList.contains('hidden')) {
-                                                    detailsList.classList.add('hidden');
-                                                    currentLevel_1 = 'bin';
-                                                }
-                                                else if (currentLevel_1 === 'bin' && !binsList.classList.contains('hidden')) {
-                                                    binsList.classList.add('hidden');
-                                                    currentLevel_1 = 'field';
-                                                }
-                                            }
-                                        });
-                                        return [3 /*break*/, 9];
+                                    case 7: return [3 /*break*/, 9];
                                     case 8:
                                         error_2 = _a.sent();
                                         console.error('Error parsing JSON:', error_2);
@@ -298,7 +189,7 @@ function fetchOpenAI(apiKey, fileId, field) {
                                 "thread": {
                                     "messages": [
                                         { "role": "user",
-                                            "content": "For the ".concat(field, " in the data, please create a way of breaking down this data in a non-obvious way that \n                        includes the semantic meaning of the data with the following JSON format.\n            \n                        {bins: [\n                                {\n                                    \"bin_name\": [insert bin name],\n                                    \"pred\": {\n                                        [fill in predicate information]\n                                    }\n                                }\n                            ]\n                        }\n                        \n                        ")
+                                            "content": "For the ".concat(field, " field in the data, please create a way of breaking down this data in a non-obvious way that \n                        includes the semantic meaning of the data with the following JSON format.\n            \n                        {bins: [\n                                {\n                                    \"bin_name\": [insert bin name],\n                                    \"pred\": {\n                                        [fill in predicate information]\n                                    }\n                                }\n                            ]\n                        }\n                        \n                        ")
                                         }
                                     ]
                                 }
@@ -378,7 +269,7 @@ function extractAndParseJSON(text) {
     if (match && match[1]) {
         try {
             var jsonString = match[1].trim();
-            var jsonData = JSON.parse(jsonString);
+            var jsonData = jsoncParser.parse(jsonString);
             return jsonData;
         }
         catch (error) {

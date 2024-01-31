@@ -1,3 +1,5 @@
+import * as jsoncParser from 'jsonc-parser';
+
 document.addEventListener('DOMContentLoaded', async () => {
     const fileInput = document.getElementById('fileInput') as HTMLInputElement; // Correct type assertion
     const uploadButton = document.getElementById('uploadButton') as HTMLButtonElement;
@@ -44,121 +46,121 @@ document.addEventListener('DOMContentLoaded', async () => {
                             }
                         }
 
-                        function createTree(data) {
-                            const ul = document.createElement('ul');
-                            data.forEach((item, index) => {
-                                const fieldLi = document.createElement('li');
-                                fieldLi.classList.add('tree-item', 'field-item');
-                                fieldLi.textContent = item.fieldName;
-                                fieldLi.id = 'field-item-' + index;
+                        // function createTree(data) {
+                        //     const ul = document.createElement('ul');
+                        //     data.forEach((item, index) => {
+                        //         const fieldLi = document.createElement('li');
+                        //         fieldLi.classList.add('tree-item', 'field-item');
+                        //         fieldLi.textContent = item.fieldName;
+                        //         fieldLi.id = 'field-item-' + index;
                         
-                                // Create sublist for bins
-                                const binsUl = document.createElement('ul');
-                                binsUl.classList.add('hidden', 'bins-list');
-                                item.bins.forEach((bin, binIndex) => {
-                                    const binLi = document.createElement('li');
-                                    if (binIndex !== 0) {
-                                        binLi.classList.add('hidden');
-                                    }
-                                    binLi.classList.add('bin-item');
-                                    binLi.textContent = bin.bin_name;
+                        //         // Create sublist for bins
+                        //         const binsUl = document.createElement('ul');
+                        //         binsUl.classList.add('hidden', 'bins-list');
+                        //         item.bins.forEach((bin, binIndex) => {
+                        //             const binLi = document.createElement('li');
+                        //             if (binIndex !== 0) {
+                        //                 binLi.classList.add('hidden');
+                        //             }
+                        //             binLi.classList.add('bin-item');
+                        //             binLi.textContent = bin.bin_name;
                         
-                                    // Create a sublist for bin reasoning and pred information
-                                    const detailsUl = document.createElement('ul');
-                                    detailsUl.classList.add('hidden', 'details-list');
+                        //             // Create a sublist for bin reasoning and pred information
+                        //             const detailsUl = document.createElement('ul');
+                        //             detailsUl.classList.add('hidden', 'details-list');
                         
-                                    const reasoningLi = document.createElement('li');
-                                    reasoningLi.textContent = 'Reasoning: ' + bin.pred.reasoning;
-                                    detailsUl.appendChild(reasoningLi);
+                        //             const reasoningLi = document.createElement('li');
+                        //             reasoningLi.textContent = 'Reasoning: ' + bin.pred.reasoning;
+                        //             detailsUl.appendChild(reasoningLi);
                         
-                                    const predLi = document.createElement('li');
-                                    predLi.textContent = 'Pred: ' + JSON.stringify(bin.pred);
-                                    detailsUl.appendChild(predLi);
+                        //             const predLi = document.createElement('li');
+                        //             predLi.textContent = 'Pred: ' + JSON.stringify(bin.pred);
+                        //             detailsUl.appendChild(predLi);
                         
-                                    binLi.appendChild(detailsUl);
-                                    binsUl.appendChild(binLi);
-                                });
+                        //             binLi.appendChild(detailsUl);
+                        //             binsUl.appendChild(binLi);
+                        //         });
                         
-                                fieldLi.appendChild(binsUl);
-                                ul.appendChild(fieldLi);
-                            });
-                            return ul;
-                        }
+                        //         fieldLi.appendChild(binsUl);
+                        //         ul.appendChild(fieldLi);
+                        //     });
+                        //     return ul;
+                        // }
 
-                        function updateSelection(index) {
-                            const allFields = fieldsContainer.querySelectorAll('.field-item');
+                        // function updateSelection(index) {
+                        //     const allFields = fieldsContainer.querySelectorAll('.field-item');
                         
-                            // Check if the index is within the valid range
-                            if (index >= 0 && index < allFields.length) {
-                                // Remove 'selected' class from all fields
-                                allFields.forEach(item => {
-                                    item.classList.remove('selected');
-                                });
+                        //     // Check if the index is within the valid range
+                        //     if (index >= 0 && index < allFields.length) {
+                        //         // Remove 'selected' class from all fields
+                        //         allFields.forEach(item => {
+                        //             item.classList.remove('selected');
+                        //         });
                         
-                                // Add 'selected' class to the new active field
-                                const selectedField = document.getElementById('field-item-' + index);
-                                if (selectedField) {
-                                    selectedField.classList.add('selected');
-                                    currentSelectedIndex = index; // Update the current index
-                                }
-                            }
-                        }
+                        //         // Add 'selected' class to the new active field
+                        //         const selectedField = document.getElementById('field-item-' + index);
+                        //         if (selectedField) {
+                        //             selectedField.classList.add('selected');
+                        //             currentSelectedIndex = index; // Update the current index
+                        //         }
+                        //     }
+                        // }
                         
-                        function toggleVisibility(element) {
-                            if (element) {
-                                element.classList.toggle('hidden');
-                            }
-                        }
+                        // function toggleVisibility(element) {
+                        //     if (element) {
+                        //         element.classList.toggle('hidden');
+                        //     }
+                        // }
 
-                        fieldsContainer.appendChild(createTree(data));
-                        updateSelection(currentSelectedIndex);
+                        // fieldsContainer.appendChild(createTree(data));
+                        // updateSelection(currentSelectedIndex);
                         
-                        let currentLevel = 'field'; // Possible values: 'field', 'bin', 'details'
+                        // let currentLevel = 'field'; // Possible values: 'field', 'bin', 'details'
 
-                        document.addEventListener('keydown', (e) => {
-                            const selectedField = document.getElementById('field-item-' + currentSelectedIndex);
-                            const binsList = selectedField.querySelector('.bins-list');
-                            let selectedBin = binsList.querySelector('.bin-item:not(.hidden)');
-                            let detailsList = selectedBin ? selectedBin.querySelector('.details-list') : null;
-                            const totalFields = data.length;
+                        // document.addEventListener('keydown', (e) => {
+                        //     const selectedField = document.getElementById('field-item-' + currentSelectedIndex);
+                        //     const binsList = selectedField.querySelector('.bins-list');
+                        //     let selectedBin = binsList.querySelector('.bin-item:not(.hidden)');
+                        //     let detailsList = selectedBin ? selectedBin.querySelector('.details-list') : null;
+                        //     const totalFields = data.length;
                         
-                            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-                                if (currentLevel === 'field') {
-                                    // Navigate between fields
-                                    currentSelectedIndex = (e.key === 'ArrowRight') 
-                                        ? (currentSelectedIndex + 1) % totalFields
-                                        : (currentSelectedIndex - 1 + totalFields) % totalFields;
-                                    updateSelection(currentSelectedIndex);
-                                    currentLevel = 'field';
-                                } else if (currentLevel === 'bin') {
-                                    // Navigate between bins
-                                    const nextBin = (e.key === 'ArrowRight') 
-                                        ? selectedBin.nextElementSibling 
-                                        : selectedBin.previousElementSibling;
-                                    if (nextBin) {
-                                        selectedBin.classList.add('hidden');
-                                        nextBin.classList.remove('hidden');
-                                        selectedBin = nextBin; // Update selectedBin to the new bin
-                                    }
-                                }
-                            } else if (e.key === 'ArrowDown') {
-                                if (currentLevel === 'field' && binsList.classList.contains('hidden')) {
-                                    binsList.classList.remove('hidden');
-                                    currentLevel = 'bin';
-                                } else if (currentLevel === 'bin' && detailsList && detailsList.classList.contains('hidden')) {
-                                    detailsList.classList.remove('hidden');
-                                    currentLevel = 'details';
-                                }
-                            } else if (e.key === 'ArrowUp') {
-                                if (currentLevel === 'details' && detailsList && !detailsList.classList.contains('hidden')) {
-                                    detailsList.classList.add('hidden');
-                                    currentLevel = 'bin';
-                                } else if (currentLevel === 'bin' && !binsList.classList.contains('hidden')) {
-                                    binsList.classList.add('hidden');
-                                    currentLevel = 'field';
-                                }
-                            }
-                        });
+                        //     if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                        //         if (currentLevel === 'field') {
+                        //             // Navigate between fields
+                        //             currentSelectedIndex = (e.key === 'ArrowRight') 
+                        //                 ? (currentSelectedIndex + 1) % totalFields
+                        //                 : (currentSelectedIndex - 1 + totalFields) % totalFields;
+                        //             // updateSelection(currentSelectedIndex);
+                        //             currentLevel = 'field';
+                        //         } else if (currentLevel === 'bin') {
+                        //             // Navigate between bins
+                        //             const nextBin = (e.key === 'ArrowRight') 
+                        //                 ? selectedBin.nextElementSibling 
+                        //                 : selectedBin.previousElementSibling;
+                        //             if (nextBin) {
+                        //                 selectedBin.classList.add('hidden');
+                        //                 nextBin.classList.remove('hidden');
+                        //                 selectedBin = nextBin; // Update selectedBin to the new bin
+                        //             }
+                        //         }
+                        //     } else if (e.key === 'ArrowDown') {
+                        //         if (currentLevel === 'field' && binsList.classList.contains('hidden')) {
+                        //             binsList.classList.remove('hidden');
+                        //             currentLevel = 'bin';
+                        //         } else if (currentLevel === 'bin' && detailsList && detailsList.classList.contains('hidden')) {
+                        //             detailsList.classList.remove('hidden');
+                        //             currentLevel = 'details';
+                        //         }
+                        //     } else if (e.key === 'ArrowUp') {
+                        //         if (currentLevel === 'details' && detailsList && !detailsList.classList.contains('hidden')) {
+                        //             detailsList.classList.add('hidden');
+                        //             currentLevel = 'bin';
+                        //         } else if (currentLevel === 'bin' && !binsList.classList.contains('hidden')) {
+                        //             binsList.classList.add('hidden');
+                        //             currentLevel = 'field';
+                        //         }
+                        //     }
+                        // });
                         
                     } catch (error) {
                         console.error('Error parsing JSON:', error);
@@ -197,7 +199,6 @@ async function uploadFileGPT(apiKey, file) {
     return fileId
 
 }
-
 
 async function fetchOpenAI(apiKey, fileId, field) {
 
@@ -316,7 +317,7 @@ async function fetchOpenAI(apiKey, fileId, field) {
                 "messages": [
                     {"role": "user", 
                     "content": 
-                        `For the ${field} in the data, please create a way of breaking down this data in a non-obvious way that 
+                        `For the ${field} field in the data, please create a way of breaking down this data in a non-obvious way that 
                         includes the semantic meaning of the data with the following JSON format.
             
                         {bins: [
@@ -391,14 +392,14 @@ async function fetchOpenAI(apiKey, fileId, field) {
     
 }
 
-function extractAndParseJSON(text: string) {
+function extractAndParseJSON(text) {
     const jsonPattern = /```json([\s\S]*?)```/; // Regular expression to match JSON block
     const match = jsonPattern.exec(text);
 
     if (match && match[1]) {
         try {
             const jsonString = match[1].trim();
-            const jsonData = JSON.parse(jsonString);
+            const jsonData = jsoncParser.parse(jsonString);
             return jsonData;
         } catch (error) {
             console.error('Error parsing JSON:', error);
