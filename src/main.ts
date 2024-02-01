@@ -71,13 +71,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                                         // Create a label for the bin
                                         const binLabel = document.createElement('label');
-                                        binLabel.textContent = `${field} Bin: ${bin.bin_name}`;
+                                        binLabel.textContent = `${field} bin titled ${bin.bin_name}.`;
                                         binButtonContainer.appendChild(binLabel);
                                         binButtonContainer.appendChild(document.createElement('br')); // Line break for better formatting
                                         
                                         // Create button for showing reasoning
                                         const reasoningButton = document.createElement('button');
-                                        reasoningButton.textContent = `Show Reasoning for ${bin.bin_name}`;
+                                        reasoningButton.textContent = `Show description for ${bin.bin_name}`;
 
                                         // Create a paragraph element to display the reasoning
                                         const reasoningText = document.createElement('p');
@@ -87,11 +87,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         reasoningButton.addEventListener('click', () => {
                                             // Toggle visibility of the reasoning text
                                             if (reasoningText.style.display === 'none') {
-                                                reasoningButton.textContent = `Hide Reasoning for ${bin.bin_name}`;
+                                                reasoningButton.textContent = `Hide description for ${bin.bin_name}`;
                                                 reasoningText.style.display = 'block';
                                                 reasoningText.textContent = bin.pred.reasoning;
                                             } else {
-                                                reasoningButton.textContent = `Show Reasoning for ${bin.bin_name}`;
+                                                reasoningButton.textContent = `Show description for ${bin.bin_name}`;
                                                 reasoningText.style.display = 'none';
                                                 reasoningText.textContent = '';
                                             }
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                                         // Create button for showing values
                                         const valuesButton = document.createElement('button');
-                                        valuesButton.textContent = `Show Values for ${bin.bin_name}`;
+                                        valuesButton.textContent = `Show data values in ${bin.bin_name}`;
 
                                         // Create a paragraph element to display the values
                                         const valuesText = document.createElement('p');
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                         valuesButton.addEventListener('click', () => {
                                             // Toggle visibility of the values text
                                             if (valuesText.style.display === 'none') {
-                                                valuesButton.textContent = `Hide Values for ${bin.bin_name}`;
+                                                valuesButton.textContent = `Hide data values in ${bin.bin_name}`;
                                                 valuesText.style.display = 'block';
                                                 table.style.display = 'table';
 
@@ -133,9 +133,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                                                 const values = getDataValues(fileContent, bin.pred)
                                                 const op = Object.keys(bin.pred).filter(item => item !== "field" && item !== "reasoning")[0]
-
-                                                valuesText.textContent = `Bin boundary: ${field} ${op} ${bin.pred[op]}. \n`;
-                                                valuesText.textContent += `Number of values in ${bin.bin_name} bin: ${values.length}. \n`;
+                                                valuesText.textContent = `Number of values in ${bin.bin_name} bin: ${values.length}. \n`;
+                                                valuesText.textContent += getBoundaryDescription(bin.pred);
 
                                                 // Clear previous rows
                                                 while (table.rows.length > 1) {
@@ -154,7 +153,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                                 });
 
                                             } else {
-                                                valuesButton.textContent = `Show Values for ${bin.bin_name}`;
+                                                valuesButton.textContent = `Show data values in ${bin.bin_name}`;
                                                 valuesText.style.display = 'none';
                                                 table.style.display = 'none';
                                                 valuesText.textContent = '';
@@ -360,8 +359,7 @@ async function fetchOpenAI(apiKey, fieldValues, field) {
                         "role": "user", 
                         "content": 
                         `Create a way of breaking down this data in a non-obvious way that includes the semantic meaning of the data with the following JSON format.
-                        Make sure the predicate can map directly to the earlier values, that you include your reasoning, and that the JSON you output is a valid JSON 
-                        without comments.
+                        Make sure the predicate can map directly to the earlier values.
                         {
                             bins : [
                                 {
@@ -370,6 +368,14 @@ async function fetchOpenAI(apiKey, fieldValues, field) {
                                 }
                             ]
                         }
+                        `
+                    },
+
+                    {
+                        "role": "user", 
+                        "content": 
+                        `Make sure that you include your reasoning for each bin in pred part of the JSON or else I will kill you. Make sure that the JSON you 
+                        output does not have comments or I will kill you.
                         `
                     }
                 ]
@@ -433,21 +439,57 @@ async function fetchOpenAI(apiKey, fieldValues, field) {
 }
 
 function extractAndParseJSON(text) {
-    const jsonPattern = /```json([\s\S]*?)```/; // Regular expression to match JSON block
-    const match = jsonPattern.exec(text);
+    // const jsonPattern = /```json([\s\S]*?)```/; // Regular expression to match JSON block
+    // const match = jsonPattern.exec(text);
 
-    if (match && match[1]) {
-        try {
-            const jsonString = match[1].trim();
-            const jsonData = JSON.parse(jsonString);
-            return jsonData;
-        } catch (error) {
-            console.error('Error parsing JSON:', error);
-            return null;
+    // if (match && match[1]) {
+    //     try {
+    //         const jsonString = match[1].trim();
+    //         const jsonData = JSON.parse(jsonString);
+    //         return jsonData;
+    //     } catch (error) {
+    //         console.error('Error parsing JSON:', error);
+    //         return null;
+    //     }
+    // } else {
+    //     console.log('No JSON found in the text.');
+    //     return null;
+    // }
+
+    // Find the index of the first opening brace
+    const startIndex = text.indexOf('{');
+    if (startIndex === -1) {
+        throw new Error("No JSON object found in the string");
+    }
+
+    let openBraces = 0;
+    let endIndex = startIndex;
+
+    // Iterate through the string to find the matching closing brace
+    for (let i = startIndex; i < text.length; i++) {
+        if (text[i] === '{') {
+            openBraces++;
+        } else if (text[i] === '}') {
+            openBraces--;
+            if (openBraces === 0) {
+                endIndex = i;
+                break;
+            }
         }
-    } else {
-        console.log('No JSON found in the text.');
-        return null;
+    }
+
+    if (openBraces !== 0) {
+        throw new Error("Invalid JSON object");
+    }
+
+    // Extract the JSON string
+    const jsonString = text.substring(startIndex, endIndex + 1);
+
+    // Parse and return the JSON object
+    try {
+        return JSON.parse(jsonString);
+    } catch (error) {
+        throw new Error("Invalid JSON format");
     }
 }
 
@@ -479,5 +521,29 @@ function getDataValues(fileContent:any, pred: any) {
         case 'gte':
             console.log(fileContent.filter(item => item[field] >= Number(pred[op])))
             return fileContent.filter(item => item[field] >= Number(pred[op]));
+      }
+}
+
+function getBoundaryDescription(pred: any){
+    const field = pred.field;
+    const op = Object.keys(pred).filter(item => item !== "field" && item !== "reasoning")[0];
+    console.log(op)
+    console.log(pred[op])
+
+    switch (op) {
+        case 'equal':
+            return `Bin boundary is values equal to ${pred[op]}.`
+        case 'oneOf':
+            return `Bin boundary is values equal to one of ${pred[op]}.`
+        case 'range':
+            return `Bin boundary is values in the range ${pred[op][0]} to ${pred[op][1]}.`
+        case 'lt':
+            return `Bin boundary is values less than ${pred[op]}.`
+        case 'lte':
+            return `Bin boundary is values less than or equal to ${pred[op]}.`
+        case 'gt':
+            return `Bin boundary is values greater than ${pred[op]}.`
+        case 'gte':
+            return `Bin boundary is values greater than or equal to ${pred[op]}.`
       }
 }

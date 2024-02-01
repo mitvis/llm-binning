@@ -111,12 +111,12 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                                     var binButtonContainer = document.createElement('div');
                                                     // Create a label for the bin
                                                     var binLabel = document.createElement('label');
-                                                    binLabel.textContent = "".concat(field, " Bin: ").concat(bin.bin_name);
+                                                    binLabel.textContent = "".concat(field, " bin titled ").concat(bin.bin_name, ".");
                                                     binButtonContainer.appendChild(binLabel);
                                                     binButtonContainer.appendChild(document.createElement('br')); // Line break for better formatting
                                                     // Create button for showing reasoning
                                                     var reasoningButton = document.createElement('button');
-                                                    reasoningButton.textContent = "Show Reasoning for ".concat(bin.bin_name);
+                                                    reasoningButton.textContent = "Show description for ".concat(bin.bin_name);
                                                     // Create a paragraph element to display the reasoning
                                                     var reasoningText = document.createElement('p');
                                                     reasoningText.id = "reasoning-".concat(bin.bin_name);
@@ -124,12 +124,12 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                                     reasoningButton.addEventListener('click', function () {
                                                         // Toggle visibility of the reasoning text
                                                         if (reasoningText.style.display === 'none') {
-                                                            reasoningButton.textContent = "Hide Reasoning for ".concat(bin.bin_name);
+                                                            reasoningButton.textContent = "Hide description for ".concat(bin.bin_name);
                                                             reasoningText.style.display = 'block';
                                                             reasoningText.textContent = bin.pred.reasoning;
                                                         }
                                                         else {
-                                                            reasoningButton.textContent = "Show Reasoning for ".concat(bin.bin_name);
+                                                            reasoningButton.textContent = "Show description for ".concat(bin.bin_name);
                                                             reasoningText.style.display = 'none';
                                                             reasoningText.textContent = '';
                                                         }
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                                     binButtonContainer.appendChild(reasoningText);
                                                     // Create button for showing values
                                                     var valuesButton = document.createElement('button');
-                                                    valuesButton.textContent = "Show Values for ".concat(bin.bin_name);
+                                                    valuesButton.textContent = "Show data values in ".concat(bin.bin_name);
                                                     // Create a paragraph element to display the values
                                                     var valuesText = document.createElement('p');
                                                     valuesText.id = "values-".concat(bin.bin_name);
@@ -157,14 +157,14 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                                     valuesButton.addEventListener('click', function () {
                                                         // Toggle visibility of the values text
                                                         if (valuesText.style.display === 'none') {
-                                                            valuesButton.textContent = "Hide Values for ".concat(bin.bin_name);
+                                                            valuesButton.textContent = "Hide data values in ".concat(bin.bin_name);
                                                             valuesText.style.display = 'block';
                                                             table.style.display = 'table';
                                                             console.log(getDataValues(fileContent, bin.pred));
                                                             var values = getDataValues(fileContent, bin.pred);
                                                             var op = Object.keys(bin.pred).filter(function (item) { return item !== "field" && item !== "reasoning"; })[0];
-                                                            valuesText.textContent = "Bin boundary: ".concat(field, " ").concat(op, " ").concat(bin.pred[op], ". \n");
-                                                            valuesText.textContent += "Number of values in ".concat(bin.bin_name, " bin: ").concat(values.length, ". \n");
+                                                            valuesText.textContent = "Number of values in ".concat(bin.bin_name, " bin: ").concat(values.length, ". \n");
+                                                            valuesText.textContent += getBoundaryDescription(bin.pred);
                                                             // Clear previous rows
                                                             while (table.rows.length > 1) {
                                                                 table.deleteRow(1);
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                                             });
                                                         }
                                                         else {
-                                                            valuesButton.textContent = "Show Values for ".concat(bin.bin_name);
+                                                            valuesButton.textContent = "Show data values in ".concat(bin.bin_name);
                                                             valuesText.style.display = 'none';
                                                             table.style.display = 'none';
                                                             valuesText.textContent = '';
@@ -313,7 +313,11 @@ function fetchOpenAI(apiKey, fieldValues, field) {
                                         },
                                         {
                                             "role": "user",
-                                            "content": "Create a way of breaking down this data in a non-obvious way that includes the semantic meaning of the data with the following JSON format.\n                        Make sure the predicate can map directly to the earlier values, that you include your reasoning, and that the JSON you output is a valid JSON \n                        without comments.\n                        {\n                            bins : [\n                                {\n                                    bin_name: [insert bin name]\n                                    \"pred\" : {insert predicate information}\n                                }\n                            ]\n                        }\n                        "
+                                            "content": "Create a way of breaking down this data in a non-obvious way that includes the semantic meaning of the data with the following JSON format.\n                        Make sure the predicate can map directly to the earlier values.\n                        {\n                            bins : [\n                                {\n                                    bin_name: [insert bin name]\n                                    \"pred\" : {insert predicate information}\n                                }\n                            ]\n                        }\n                        "
+                                        },
+                                        {
+                                            "role": "user",
+                                            "content": "Make sure that you include your reasoning for each bin in pred part of the JSON or else I will kill you. Make sure that the JSON you \n                        output does not have comments or I will kill you.\n                        "
                                         }
                                     ]
                                 }
@@ -388,22 +392,52 @@ function fetchOpenAI(apiKey, fieldValues, field) {
     });
 }
 function extractAndParseJSON(text) {
-    var jsonPattern = /```json([\s\S]*?)```/; // Regular expression to match JSON block
-    var match = jsonPattern.exec(text);
-    if (match && match[1]) {
-        try {
-            var jsonString = match[1].trim();
-            var jsonData = JSON.parse(jsonString);
-            return jsonData;
+    // const jsonPattern = /```json([\s\S]*?)```/; // Regular expression to match JSON block
+    // const match = jsonPattern.exec(text);
+    // if (match && match[1]) {
+    //     try {
+    //         const jsonString = match[1].trim();
+    //         const jsonData = JSON.parse(jsonString);
+    //         return jsonData;
+    //     } catch (error) {
+    //         console.error('Error parsing JSON:', error);
+    //         return null;
+    //     }
+    // } else {
+    //     console.log('No JSON found in the text.');
+    //     return null;
+    // }
+    // Find the index of the first opening brace
+    var startIndex = text.indexOf('{');
+    if (startIndex === -1) {
+        throw new Error("No JSON object found in the string");
+    }
+    var openBraces = 0;
+    var endIndex = startIndex;
+    // Iterate through the string to find the matching closing brace
+    for (var i = startIndex; i < text.length; i++) {
+        if (text[i] === '{') {
+            openBraces++;
         }
-        catch (error) {
-            console.error('Error parsing JSON:', error);
-            return null;
+        else if (text[i] === '}') {
+            openBraces--;
+            if (openBraces === 0) {
+                endIndex = i;
+                break;
+            }
         }
     }
-    else {
-        console.log('No JSON found in the text.');
-        return null;
+    if (openBraces !== 0) {
+        throw new Error("Invalid JSON object");
+    }
+    // Extract the JSON string
+    var jsonString = text.substring(startIndex, endIndex + 1);
+    // Parse and return the JSON object
+    try {
+        return JSON.parse(jsonString);
+    }
+    catch (error) {
+        throw new Error("Invalid JSON format");
     }
 }
 function getDataValues(fileContent, pred) {
@@ -433,5 +467,27 @@ function getDataValues(fileContent, pred) {
         case 'gte':
             console.log(fileContent.filter(function (item) { return item[field] >= Number(pred[op]); }));
             return fileContent.filter(function (item) { return item[field] >= Number(pred[op]); });
+    }
+}
+function getBoundaryDescription(pred) {
+    var field = pred.field;
+    var op = Object.keys(pred).filter(function (item) { return item !== "field" && item !== "reasoning"; })[0];
+    console.log(op);
+    console.log(pred[op]);
+    switch (op) {
+        case 'equal':
+            return "Bin boundary is values equal to ".concat(pred[op], ".");
+        case 'oneOf':
+            return "Bin boundary is values equal to one of ".concat(pred[op], ".");
+        case 'range':
+            return "Bin boundary is values in the range ".concat(pred[op][0], " to ").concat(pred[op][1], ".");
+        case 'lt':
+            return "Bin boundary is values less than ".concat(pred[op], ".");
+        case 'lte':
+            return "Bin boundary is values less than or equal to ".concat(pred[op], ".");
+        case 'gt':
+            return "Bin boundary is values greater than ".concat(pred[op], ".");
+        case 'gte':
+            return "Bin boundary is values greater than or equal to ".concat(pred[op], ".");
     }
 }
