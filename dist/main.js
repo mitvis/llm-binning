@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                 fieldsContainer.appendChild(document.createElement('br'));
                                 // Event listener for checkbox
                                 checkbox.addEventListener('change', function (event) { return __awaiter(_this, void 0, void 0, function () {
-                                    var fieldValues, response, parsedResponse, bins, binsContainer_1, error_1;
+                                    var fieldValues, response, parsedResponse, bins_1, binsContainer_1, error_1;
                                     return __generator(this, function (_a) {
                                         switch (_a.label) {
                                             case 0:
@@ -101,17 +101,19 @@ document.addEventListener('DOMContentLoaded', function () { return __awaiter(_th
                                             case 2:
                                                 response = _a.sent();
                                                 parsedResponse = extractAndParseJSON(response);
-                                                bins = parsedResponse.bins;
-                                                console.log(bins);
+                                                bins_1 = parsedResponse.bins;
+                                                console.log(bins_1);
                                                 binsContainer_1 = document.createElement('div');
                                                 binsContainer_1.id = 'binsContainer';
                                                 // Iterate over the bins and create a button for each
-                                                bins.forEach(function (bin) {
+                                                bins_1.forEach(function (bin, index) {
                                                     // Create a container for each bin's buttons
                                                     var binButtonContainer = document.createElement('div');
+                                                    // Calculate the bin index label, like "1/3"
+                                                    var binIndexLabel = "".concat(index + 1, " of ").concat(bins_1.length, ". ");
                                                     // Create a label for the bin
                                                     var binLabel = document.createElement('label');
-                                                    binLabel.textContent = "".concat(field, " bin titled ").concat(bin.bin_name, ".");
+                                                    binLabel.textContent = binIndexLabel + "".concat(field, " bin titled ").concat(bin.bin_name, ".");
                                                     binButtonContainer.appendChild(binLabel);
                                                     binButtonContainer.appendChild(document.createElement('br')); // Line break for better formatting
                                                     // Create button for showing reasoning

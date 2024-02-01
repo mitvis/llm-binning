@@ -61,17 +61,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     const bins = parsedResponse.bins;
                                     console.log(bins);
 
+
                                     const binsContainer = document.createElement('div');
                                     binsContainer.id = 'binsContainer';
 
                                     // Iterate over the bins and create a button for each
-                                    bins.forEach(bin => {
+                                    bins.forEach((bin, index) => {
                                         // Create a container for each bin's buttons
                                         const binButtonContainer = document.createElement('div');
 
+                                        // Calculate the bin index label, like "1/3"
+                                        const binIndexLabel = `${index + 1} of ${bins.length}. `;
+
                                         // Create a label for the bin
                                         const binLabel = document.createElement('label');
-                                        binLabel.textContent = `${field} bin titled ${bin.bin_name}.`;
+                                        binLabel.textContent = binIndexLabel+ `${field} bin titled ${bin.bin_name}.`;
                                         binButtonContainer.appendChild(binLabel);
                                         binButtonContainer.appendChild(document.createElement('br')); // Line break for better formatting
                                         
